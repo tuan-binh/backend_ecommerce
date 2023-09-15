@@ -5,8 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ra.exception.RoleException;
-import ra.exception.UserException;
+import ra.exception.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +30,26 @@ public class ApplicationHandler {
 	@ExceptionHandler(RoleException.class)
 	public String handleExceptionRole(RoleException e) {
 		return "Exception role --> " + e.getMessage();
+	}
+	
+	@ExceptionHandler(SizeException.class)
+	public String handleExceptionSize(SizeException e) {
+		return "Exception size --> " + e.getMessage();
+	}
+	
+	@ExceptionHandler(RateException.class)
+	public String handleExceptionRate(RateException e) {
+		return "Exception rate --> " + e.getMessage();
+	}
+	
+	@ExceptionHandler(CategoryException.class)
+	public String handleExceptionCategory(CategoryException e) {
+		return "Exception category --> " + e.getMessage();
+	}
+	
+	@ExceptionHandler(CouponException.class)
+	public String handleExceptionCoupon(CouponException e) {
+		return "Exception coupon --> " + e.getMessage();
 	}
 	
 }

@@ -6,4 +6,5 @@ import ra.model.domain.Rates;
 
 @Repository
 public interface IRateRepository extends JpaRepository<Rates, Long> {
+
 }

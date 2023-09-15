@@ -19,6 +19,7 @@ public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderRe
 				  .phone(orderRequest.getPhone())
 				  .total(orderRequest.getTotal())
 				  .users(orderRequest.getUsers())
+				  .status(orderRequest.isStatus())
 				  .build();
 	}
 	
@@ -32,6 +33,7 @@ public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderRe
 				  .phone(orders.getPhone())
 				  .total(orders.getTotal())
 				  .users(orders.getUsers())
+				  .status(orders.isStatus())
 				  .build();
 	}
 	

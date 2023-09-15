@@ -19,5 +19,6 @@ public class OrderRequest {
 	private String phone;
 	private double total;
 	private Users users;
+	private boolean status;
 	
 }

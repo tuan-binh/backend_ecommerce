@@ -41,4 +41,6 @@ public class Orders {
 	@JoinColumn(name = "user_id")
 	private Users users;
 	
+	private boolean status;
+	
 }

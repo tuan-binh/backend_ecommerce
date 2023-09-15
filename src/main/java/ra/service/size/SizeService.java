@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ra.exception.SizeException;
 import ra.mapper.size.SizeMapper;
 import ra.model.domain.Size;
 import ra.model.dto.request.SizeRequest;
@@ -36,24 +37,33 @@ public class SizeService implements ISizeService {
 	}
 	
 	@Override
-	public SizeResponse findById(Long id) {
+	public SizeResponse findById(Long id) throws SizeException {
 		Optional<Size> optionalSize = sizeRepository.findById(id);
-		
-		return null;
+		return optionalSize.map(item -> sizeMapper.toResponse(item)).orElseThrow(() -> new SizeException("not found size"));
 	}
 	
 	@Override
 	public SizeResponse save(SizeRequest sizeRequest) {
-		return null;
+		return sizeMapper.toResponse(sizeRepository.save(sizeMapper.toEntity(sizeRequest)));
 	}
 	
 	@Override
 	public SizeResponse update(SizeRequest sizeRequest, Long id) {
-		return null;
+		Size size = sizeMapper.toEntity(sizeRequest);
+		size.setId(id);
+		return sizeMapper.toResponse(sizeRepository.save(size));
 	}
 	
 	@Override
-	public SizeResponse changeStatus(Long id) {
-		return null;
+	public SizeResponse changeStatus(Long id) throws SizeException {
+		Size size = findSizeById(id);
+		size.setStatus(!size.isStatus());
+		return sizeMapper.toResponse(sizeRepository.save(size));
 	}
+	
+	public Size findSizeById(Long id) throws SizeException {
+		Optional<Size> optionalSize = sizeRepository.findById(id);
+		return optionalSize.orElseThrow(() -> new SizeException("not found size"));
+	}
+	
 }

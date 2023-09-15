@@ -80,24 +80,26 @@ public class UserService implements IUserService {
 			roles.add(roleService.findByRoleName(ERole.ROLE_USER));
 		} else {
 			userRegister.getRoles().forEach(role -> {
-				if (role.equals("admin")) {
-					try {
-						roles.add(roleService.findByRoleName(ERole.ROLE_ADMIN));
-					} catch (RoleException e) {
-						throw new RuntimeException(e);
-					}
-					
-					try {
-						roles.add(roleService.findByRoleName(ERole.ROLE_USER));
-					} catch (RoleException e) {
-						throw new RuntimeException(e);
-					}
-				} else if (role.equals("user")) {
-					try {
-						roles.add(roleService.findByRoleName(ERole.ROLE_USER));
-					} catch (RoleException e) {
-						throw new RuntimeException(e);
-					}
+				switch (role) {
+					case "admin":
+						try {
+							roles.add(roleService.findByRoleName(ERole.ROLE_ADMIN));
+						} catch (RoleException e) {
+							throw new RuntimeException(e);
+						}
+					case "user":
+						try {
+							roles.add(roleService.findByRoleName(ERole.ROLE_USER));
+						} catch (RoleException e) {
+							throw new RuntimeException(e);
+						}
+						break;
+					default:
+						try {
+							throw new RoleException("don't have role " + role);
+						} catch (RoleException e) {
+							throw new RuntimeException(e);
+						}
 				}
 			});
 		}
