@@ -34,8 +34,7 @@ public class Coupon {
 	
 	private boolean status;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "order_id")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY,mappedBy = "coupon")
 	private List<Orders> orders = new ArrayList<>();
 	
 }

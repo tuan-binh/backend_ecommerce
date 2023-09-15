@@ -13,7 +13,7 @@ public interface ICategoryService {
 	
 	CategoryResponse findById(Long id) throws CategoryException;
 	
-	CategoryResponse save(CategoryRequest categoryRequest);
+	CategoryResponse save(CategoryRequest categoryRequest) throws CategoryException;
 	
 	CategoryResponse update(CategoryRequest categoryRequest, Long id);
 	

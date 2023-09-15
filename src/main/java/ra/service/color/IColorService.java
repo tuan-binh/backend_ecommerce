@@ -14,7 +14,7 @@ public interface IColorService {
 	
 	ColorResponse findById(Long id) throws ColorException;
 	
-	ColorResponse save(ColorRequest colorRequest);
+	ColorResponse save(ColorRequest colorRequest) throws ColorException;
 	
 	ColorResponse update(ColorRequest colorRequest, Long id);
 	

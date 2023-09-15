@@ -9,4 +9,6 @@ import ra.model.domain.Category;
 @Repository
 public interface ICategoryRepository extends JpaRepository<Category, Long> {
 	Page<Category> findAllByCategoryNameContaining(Pageable pageable, String categoryName);
+	
+	boolean existsByCategoryName(String categoryName);
 }

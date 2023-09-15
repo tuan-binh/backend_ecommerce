@@ -39,7 +39,10 @@ public class CouponService implements ICouponService {
 	}
 	
 	@Override
-	public CouponResponse save(CouponRequest couponRequest) {
+	public CouponResponse save(CouponRequest couponRequest) throws CouponException {
+		if (couponRepository.existsByCoupon(couponRequest.getCoupon())) {
+			throw new CouponException("coupon is exists");
+		}
 		return couponMapper.toResponse(couponRepository.save(couponMapper.toEntity(couponRequest)));
 	}
 	

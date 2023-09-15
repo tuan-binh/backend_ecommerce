@@ -66,4 +66,6 @@ public class Product {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	private List<Rates> rates = new ArrayList<>();
 	
+	private boolean status;
+	
 }

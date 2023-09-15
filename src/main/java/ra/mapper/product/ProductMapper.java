@@ -2,12 +2,10 @@ package ra.mapper.product;
 
 import org.springframework.stereotype.Component;
 import ra.mapper.IGenericMapper;
-import ra.model.domain.ImageProduct;
 import ra.model.domain.Product;
 import ra.model.dto.request.ProductRequest;
+import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ProductResponse;
-
-import java.util.stream.Collectors;
 
 @Component
 public class ProductMapper implements IGenericMapper<Product, ProductRequest, ProductResponse> {
@@ -26,6 +24,21 @@ public class ProductMapper implements IGenericMapper<Product, ProductRequest, Pr
 				  // nhớ thêm chuyển đổi từ multipartFile để cập nhật ảnh
 				  // .images()
 				  // .imageActive()
+				  .status(productRequest.isStatus())
+				  .build();
+	}
+	
+	public Product toEntity(ProductUpdate productUpdate) {
+		return Product.builder()
+				  .productName(productUpdate.getProductName())
+				  .description(productUpdate.getDescription())
+				  .price(productUpdate.getPrice())
+				  .stock(productUpdate.getStock())
+				  .viewCount(productUpdate.getViewCount())
+				  .category(productUpdate.getCategory())
+				  .color(productUpdate.getColor())
+				  .size(productUpdate.getSize())
+				  .status(productUpdate.isStatus())
 				  .build();
 	}
 	
@@ -42,7 +55,9 @@ public class ProductMapper implements IGenericMapper<Product, ProductRequest, Pr
 				  .category(product.getCategory())
 				  .color(product.getColor())
 				  .size(product.getSize())
-				  .images(product.getImages().stream().map(ImageProduct::getImage).collect(Collectors.toList()))
+				  .images(product.getImages())
+				  .rates(product.getRates())
+				  .status(product.isStatus())
 				  .build();
 	}
 }

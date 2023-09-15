@@ -13,7 +13,7 @@ public interface ISizeService {
 	
 	SizeResponse findById(Long id) throws SizeException;
 	
-	SizeResponse save(SizeRequest sizeRequest);
+	SizeResponse save(SizeRequest sizeRequest) throws SizeException;
 	
 	SizeResponse update(SizeRequest sizeRequest, Long id);
 	

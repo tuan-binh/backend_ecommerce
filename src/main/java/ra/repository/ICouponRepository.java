@@ -6,4 +6,5 @@ import ra.model.domain.Coupon;
 
 @Repository
 public interface ICouponRepository extends JpaRepository<Coupon, Long> {
+	boolean existsByCoupon(String coupon);
 }

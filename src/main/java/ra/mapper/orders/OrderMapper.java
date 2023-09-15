@@ -19,6 +19,7 @@ public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderRe
 				  .phone(orderRequest.getPhone())
 				  .total(orderRequest.getTotal())
 				  .users(orderRequest.getUsers())
+				  .coupon(orderRequest.getCoupon())
 				  .status(orderRequest.isStatus())
 				  .build();
 	}
@@ -33,6 +34,7 @@ public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderRe
 				  .phone(orders.getPhone())
 				  .total(orders.getTotal())
 				  .users(orders.getUsers())
+				  .coupon(orders.getCoupon())
 				  .status(orders.isStatus())
 				  .build();
 	}
@@ -40,15 +42,15 @@ public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderRe
 	public EDelivered findEDeliveredByString(String delivery) {
 		switch (delivery) {
 			case "pending":
-				return EDelivered.ROLE_PENDING;
+				return EDelivered.PENDING;
 			case "prepare":
-				return EDelivered.ROLE_PREPARE;
+				return EDelivered.PREPARE;
 			case "delivery":
-				return EDelivered.ROLE_DELIVERY;
+				return EDelivered.DELIVERY;
 			case "success":
-				return EDelivered.ROLE_SUCCESS;
+				return EDelivered.SUCCESS;
 			case "cancel":
-				return EDelivered.ROLE_CANCEL;
+				return EDelivered.CANCEL;
 		}
 		throw new RuntimeException("Lỗi không đúng định dạng order");
 	}

@@ -41,7 +41,10 @@ public class ColorService implements IColorService {
 	}
 	
 	@Override
-	public ColorResponse save(ColorRequest colorRequest) {
+	public ColorResponse save(ColorRequest colorRequest) throws ColorException {
+		if(colorRepository.existsByColorName(colorRequest.getColorName())) {
+			throw new ColorException("color name is exists");
+		}
 		return colorMapper.toResponse(colorRepository.save(colorMapper.toEntity(colorRequest)));
 	}
 	

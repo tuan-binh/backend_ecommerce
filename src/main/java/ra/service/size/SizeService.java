@@ -43,7 +43,10 @@ public class SizeService implements ISizeService {
 	}
 	
 	@Override
-	public SizeResponse save(SizeRequest sizeRequest) {
+	public SizeResponse save(SizeRequest sizeRequest) throws SizeException {
+		if (sizeRepository.existsBySizeName(sizeRequest.getSizeName())) {
+			throw new SizeException("Exists size in storage");
+		}
 		return sizeMapper.toResponse(sizeRepository.save(sizeMapper.toEntity(sizeRequest)));
 	}
 	

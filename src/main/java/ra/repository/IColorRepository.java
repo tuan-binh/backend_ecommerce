@@ -11,4 +11,6 @@ public interface IColorRepository extends JpaRepository<Color, Long> {
 	
 	Page<Color> findAllByColorNameContaining(Pageable pageable, String colorName);
 	
+	boolean existsByColorName(String colorName);
+	
 }

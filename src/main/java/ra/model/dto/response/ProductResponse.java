@@ -36,7 +36,8 @@ public class ProductResponse {
 	
 	private Set<Size> size;
 	
-	private List<String> images;
+	private List<ImageProduct> images;
 	
 	private List<Rates> rates = new ArrayList<>();
+	private boolean status;
 }

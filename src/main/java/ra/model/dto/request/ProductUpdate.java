@@ -7,10 +7,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 import ra.model.domain.Category;
 import ra.model.domain.Color;
-import ra.model.domain.Rates;
 import ra.model.domain.Size;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -18,8 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Data
 @Builder
-public class ProductRequest {
-	
+public class ProductUpdate {
 	private String productName;
 	
 	private String description;
@@ -36,8 +33,5 @@ public class ProductRequest {
 	
 	private Set<Size> size;
 	
-	private List<MultipartFile> file;
-	
 	private boolean status;
-	
 }

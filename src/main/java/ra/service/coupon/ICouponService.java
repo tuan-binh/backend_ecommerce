@@ -12,7 +12,7 @@ public interface ICouponService {
 	
 	CouponResponse findById(Long id) throws CouponException;
 	
-	CouponResponse save(CouponRequest couponRequest);
+	CouponResponse save(CouponRequest couponRequest) throws CouponException;
 	
 	CouponResponse update(CouponRequest couponRequest, Long id);
 	

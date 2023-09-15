@@ -41,7 +41,10 @@ public class CateGoryService implements ICategoryService {
 	}
 	
 	@Override
-	public CategoryResponse save(CategoryRequest categoryRequest) {
+	public CategoryResponse save(CategoryRequest categoryRequest) throws CategoryException {
+		if (categoryRepository.existsByCategoryName(categoryRequest.getCategoryName())) {
+			throw new CategoryException("category is exists");
+		}
 		return categoryMapper.toResponse(categoryRepository.save(categoryMapper.toEntity(categoryRequest)));
 	}
 	

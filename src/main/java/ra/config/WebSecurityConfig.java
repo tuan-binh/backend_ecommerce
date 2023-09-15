@@ -14,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ra.security.jwt.CustomAccessDeniedHandler;
 import ra.security.jwt.JwtEntryPoint;
 import ra.security.jwt.JwtTokenFilter;
 import ra.security.user_principle.UserDetailService;
@@ -29,6 +30,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private JwtEntryPoint jwtEntryPoint;
 	@Autowired
 	private JwtTokenFilter jwtTokenFilter;
+	@Autowired
+	private CustomAccessDeniedHandler customAccessDeniedHandler;
 	
 	@Bean
 	public static PasswordEncoder passwordEncoder() {
@@ -48,13 +51,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().and().csrf().disable()
+		http.cors().and().csrf().disable()
 				  .authorizeRequests()
 				  .antMatchers("/auth/**").permitAll()
 				  .antMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+				  .antMatchers("/product/**").permitAll()
 				  .anyRequest().authenticated()
 				  .and()
-				  .exceptionHandling().authenticationEntryPoint(jwtEntryPoint)
+				  .exceptionHandling().authenticationEntryPoint(jwtEntryPoint).accessDeniedHandler(customAccessDeniedHandler)
 				  .and()
 				  .sessionManagement()
 				  .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
