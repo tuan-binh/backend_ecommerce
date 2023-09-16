@@ -75,4 +75,9 @@ public class ApplicationHandler {
 		return "Exception product --> " + e.getMessage();
 	}
 	
+	@ExceptionHandler(ImageProductException.class)
+	public String handleExceptionImage(ImageProductException e) {
+		return "Exception image --> " + e.getMessage();
+	}
+	
 }

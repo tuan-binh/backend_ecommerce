@@ -8,13 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ra.exception.ImageProductException;
 import ra.exception.ProductException;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ProductResponse;
 import ra.service.product.IProductService;
-
-import java.util.Optional;
 
 
 @RestController
@@ -26,9 +25,14 @@ public class ProductController {
 	private IProductService productService;
 	
 	
-	@GetMapping("/getAll")
-	public ResponseEntity<Page<ProductResponse>> getAllProducts(@PageableDefault(page = 0, size = 3) Pageable pageable, @RequestParam(value = "search",defaultValue = "") String text) {
-		return new ResponseEntity<>(productService.findAll(pageable, text), HttpStatus.OK);
+	@GetMapping("/get_all")
+	public ResponseEntity<Page<ProductResponse>> getAllProducts(@PageableDefault(page = 0, size = 3) Pageable pageable) {
+		return new ResponseEntity<>(productService.findAll(pageable), HttpStatus.OK);
+	}
+	
+	@GetMapping("/get/{id}")
+	public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) throws ProductException {
+		return new ResponseEntity<>(productService.findById(id), HttpStatus.OK);
 	}
 	
 	@PostMapping("/add")
@@ -49,6 +53,11 @@ public class ProductController {
 	@PutMapping("/add_image/to_product/{id}")
 	public ResponseEntity<ProductResponse> handleAddImageToProduct(@RequestParam("file") MultipartFile multipartFile, @PathVariable Long id) throws ProductException {
 		return new ResponseEntity<>(productService.addImageToProduct(multipartFile, id), HttpStatus.CREATED);
+	}
+	
+	@DeleteMapping("/delete_image/{idImage}/in_product/{idProduct}")
+	public ResponseEntity<ProductResponse> handleDeleteImageInProduct(@PathVariable Long idImage, @PathVariable Long idProduct) throws ImageProductException, ProductException {
+		return new ResponseEntity<>(productService.deleteImageInProduct(idImage, idProduct), HttpStatus.OK);
 	}
 	
 	
