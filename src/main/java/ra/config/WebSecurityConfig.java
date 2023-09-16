@@ -56,6 +56,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				  .antMatchers("/auth/**").permitAll()
 				  .antMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
 				  .antMatchers("/product/**").permitAll()
+				  .antMatchers("/category/**").permitAll()
+				  .antMatchers("/color/**").permitAll()
 				  .anyRequest().authenticated()
 				  .and()
 				  .exceptionHandling().authenticationEntryPoint(jwtEntryPoint).accessDeniedHandler(customAccessDeniedHandler)
