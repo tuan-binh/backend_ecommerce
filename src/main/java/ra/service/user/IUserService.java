@@ -3,6 +3,7 @@ package ra.service.user;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import ra.exception.ProductException;
+import ra.exception.RateException;
 import ra.exception.RoleException;
 import ra.exception.UserException;
 import ra.model.domain.Users;
@@ -31,5 +32,9 @@ public interface IUserService {
 	UserResponse addProductToFavourite(Long productId, Long userId) throws UserException, ProductException;
 	
 	UserResponse rateProductByUser(RateRequest rateRequest, Long productId, Long userId) throws ProductException, UserException;
+	
+	UserResponse removeFavouriteInUser(Long productId, Long userId) throws ProductException, UserException;
+	
+	UserResponse removeRateInProductByUser(Long userId, Long rateId) throws RateException, UserException;
 	
 }

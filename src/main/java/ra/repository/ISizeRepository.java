@@ -8,7 +8,7 @@ import ra.model.domain.Size;
 
 @Repository
 public interface ISizeRepository extends JpaRepository<Size, Long> {
-	Page<Size> findAllBySizeName(Pageable pageable, String sizeName);
+	Page<Size> findAllBySizeNameContaining(Pageable pageable, String sizeName);
 	
 	boolean existsBySizeName(String sizeName);
 	

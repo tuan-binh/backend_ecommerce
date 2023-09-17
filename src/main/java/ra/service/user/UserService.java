@@ -14,29 +14,25 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ra.exception.ProductException;
+import ra.exception.RateException;
 import ra.exception.RoleException;
 import ra.exception.UserException;
 import ra.mapper.user.UserMapper;
-import ra.model.domain.ERole;
-import ra.model.domain.Product;
-import ra.model.domain.Roles;
-import ra.model.domain.Users;
+import ra.model.domain.*;
 import ra.model.dto.request.RateRequest;
 import ra.model.dto.request.UserLogin;
 import ra.model.dto.request.UserRegister;
 import ra.model.dto.response.JwtResponse;
 import ra.model.dto.response.UserResponse;
 import ra.repository.IProductRepository;
+import ra.repository.IRateRepository;
 import ra.repository.IUserRepository;
 import ra.security.jwt.JwtEntryPoint;
 import ra.security.jwt.JwtProvider;
 import ra.security.user_principle.UserPrinciple;
 import ra.service.role.IRoleService;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,6 +54,8 @@ public class UserService implements IUserService {
 	private JwtProvider jwtProvider;
 	@Autowired
 	private IProductRepository productRepository;
+	@Autowired
+	private IRateRepository rateRepository;
 	
 	@Override
 	public Page<UserResponse> findAll(Pageable pageable, Optional<String> fullName) {
@@ -175,9 +173,38 @@ public class UserService implements IUserService {
 	public UserResponse rateProductByUser(RateRequest rateRequest, Long productId, Long userId) throws ProductException, UserException {
 		Product product = findProductById(productId);
 		Users users = findUserById(userId);
-		// làm nột phần đánh giá
-		
-		return null;
+		users.getRates().add(Rates.builder()
+				  .rating(rateRequest.getRating())
+				  .content(rateRequest.getContent())
+				  .product(product)
+				  .users(users)
+				  .status(true)
+				  .build());
+		return userMapper.toResponse(userRepository.save(users));
+	}
+	
+	@Override
+	public UserResponse removeFavouriteInUser(Long productId, Long userId) throws ProductException, UserException {
+		Product product = findProductById(productId);
+		Users users = findUserById(userId);
+		users.getFavourites().remove(product);
+		return userMapper.toResponse(userRepository.save(users));
+	}
+	
+	@Override
+	public UserResponse removeRateInProductByUser(Long userId, Long rateId) throws RateException, UserException {
+		Users users = findUserById(userId);
+		Rates rates = findRateById(rateId);
+		if (Objects.equals(users.getId(), rates.getUsers().getId())) {
+			rateRepository.delete(rates);
+			return userMapper.toResponse(userRepository.save(users));
+		}
+		throw new RateException("You do not have permission to delete rate");
+	}
+	
+	public Rates findRateById(Long rateId) throws RateException {
+		Optional<Rates> optionalRates = rateRepository.findById(rateId);
+		return optionalRates.orElseThrow(() -> new RateException("rate not found"));
 	}
 	
 	public Product findProductById(Long productId) throws ProductException {

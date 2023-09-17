@@ -6,16 +6,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ra.exception.ImageProductException;
-import ra.exception.ProductException;
+import ra.exception.*;
 import ra.mapper.product.ProductMapper;
-import ra.model.domain.ImageProduct;
-import ra.model.domain.Product;
+import ra.model.domain.*;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ProductResponse;
-import ra.repository.IImageProductRepository;
-import ra.repository.IProductRepository;
+import ra.repository.*;
 import ra.service.upload_aws.StorageService;
 
 import java.util.ArrayList;
@@ -30,6 +27,12 @@ public class ProductService implements IProductService {
 	private IProductRepository productRepository;
 	@Autowired
 	private IImageProductRepository iImageProductRepository;
+	@Autowired
+	private IColorRepository colorRepository;
+	@Autowired
+	private ISizeRepository sizeRepository;
+	@Autowired
+	private ICategoryRepository categoryRepository;
 	@Autowired
 	private ProductMapper productMapper;
 	@Autowired
@@ -114,6 +117,52 @@ public class ProductService implements IProductService {
 		Product product = findProductById(idProduct);
 		product.getImages().add(imageProduct);
 		return productMapper.toResponse(productRepository.save(product));
+	}
+	
+	@Override
+	public ProductResponse deleteColorInProduct(Long productId, Long colorId) throws ProductException, ColorException {
+		Product product = findProductById(productId);
+		Color color = findColorById(colorId);
+		product.getColor().remove(color);
+		return productMapper.toResponse(productRepository.save(product));
+	}
+	
+	@Override
+	public ProductResponse deleteSizeInProduct(Long productId, Long sizeId) throws ProductException, SizeException {
+		Product product = findProductById(productId);
+		Size size = findSizeById(sizeId);
+		product.getSize().remove(size);
+		return productMapper.toResponse(productRepository.save(product));
+	}
+	
+	@Override
+	public ProductResponse addCategoryToProduct(Long categoryId, Long productId) throws ProductException, CategoryException {
+		Product product = findProductById(productId);
+		Category category = findCategoryById(categoryId);
+		product.setCategory(category);
+		return productMapper.toResponse(productRepository.save(product));
+	}
+	
+	@Override
+	public ProductResponse removeCategoryInProduct(Long productId) throws ProductException {
+		Product product = findProductById(productId);
+		product.setCategory(null);
+		return productMapper.toResponse(productRepository.save(product));
+	}
+	
+	public Category findCategoryById(Long categoryId) throws CategoryException {
+		Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+		return optionalCategory.orElseThrow(() -> new CategoryException("category not found"));
+	}
+	
+	public Color findColorById(Long colorId) throws ColorException {
+		Optional<Color> optionalColor = colorRepository.findById(colorId);
+		return optionalColor.orElseThrow(() -> new ColorException("color not found"));
+	}
+	
+	public Size findSizeById(Long sizeId) throws SizeException {
+		Optional<Size> optionalSize = sizeRepository.findById(sizeId);
+		return optionalSize.orElseThrow(() -> new SizeException("size not found"));
 	}
 	
 	public ImageProduct findImageProductById(Long idImage) throws ImageProductException {

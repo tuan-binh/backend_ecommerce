@@ -28,7 +28,7 @@ public class SizeService implements ISizeService {
 	@Override
 	public Page<SizeResponse> findAll(Pageable pageable, Optional<String> sizeName) {
 		List<SizeResponse> list = new ArrayList<>();
-		list = sizeName.map(s -> sizeRepository.findAllBySizeName(pageable, s).stream()
+		list = sizeName.map(s -> sizeRepository.findAllBySizeNameContaining(pageable, s).stream()
 				  .map(size -> sizeMapper.toResponse(size))
 				  .collect(Collectors.toList())).orElseGet(() -> sizeRepository.findAll(pageable).stream()
 				  .map(size -> sizeMapper.toResponse(size))

@@ -8,8 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ra.exception.ImageProductException;
-import ra.exception.ProductException;
+import ra.exception.*;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ProductResponse;
@@ -63,5 +62,24 @@ public class ProductController {
 		return new ResponseEntity<>(productService.deleteImageInProduct(idImage, idProduct), HttpStatus.OK);
 	}
 	
+	@DeleteMapping("/delete_color/{productId}/color/{colorId}")
+	public ResponseEntity<ProductResponse> handleDeleteColor(@PathVariable Long productId, @PathVariable Long colorId) throws ColorException, ProductException {
+		return new ResponseEntity<>(productService.deleteColorInProduct(productId, colorId), HttpStatus.OK);
+	}
+	
+	@DeleteMapping("/delete_size/{productId}/size/{sizeId}")
+	public ResponseEntity<ProductResponse> handleDeleteSize(@PathVariable Long productId, @PathVariable Long sizeId) throws ProductException, SizeException {
+		return new ResponseEntity<>(productService.deleteSizeInProduct(productId, sizeId), HttpStatus.OK);
+	}
+	
+	@PostMapping("/add_category/{categoryId}/to/{productId}")
+	public ResponseEntity<ProductResponse> handleAddCategoryToProduct(@PathVariable Long categoryId, @PathVariable Long productId) throws CategoryException, ProductException {
+		return new ResponseEntity<>(productService.addCategoryToProduct(categoryId, productId), HttpStatus.CREATED);
+	}
+	
+	@DeleteMapping("/remve_category/{productId}")
+	public ResponseEntity<ProductResponse> handleRemoveCategoryInProduct(@PathVariable Long productId) throws ProductException {
+		return new ResponseEntity<>(productService.removeCategoryInProduct(productId), HttpStatus.OK);
+	}
 	
 }

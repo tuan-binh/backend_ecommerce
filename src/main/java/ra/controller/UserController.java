@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ra.exception.ProductException;
+import ra.exception.RateException;
 import ra.exception.UserException;
 import ra.model.dto.request.RateRequest;
 import ra.model.dto.response.UserResponse;
@@ -40,13 +41,24 @@ public class UserController {
 	
 	@GetMapping("/favourite/{productId}/to/{userId}")
 	public ResponseEntity<UserResponse> handleAddProductToFavourite(@PathVariable Long productId, @PathVariable Long userId) throws UserException, ProductException {
-		return new ResponseEntity<>(userService.addProductToFavourite(productId, userId), HttpStatus.OK);
+		return new ResponseEntity<>(userService.addProductToFavourite(productId, userId), HttpStatus.CREATED);
 	}
 	
 	@PostMapping("/rate/{productId}/by/{userId}")
 	public ResponseEntity<UserResponse> handleRateProductByUser(@RequestBody RateRequest rateRequest, @PathVariable Long productId, @PathVariable Long userId) throws UserException, ProductException {
-		return new ResponseEntity<>(userService.rateProductByUser(rateRequest,productId, userId), HttpStatus.CREATED);
+		return new ResponseEntity<>(userService.rateProductByUser(rateRequest, productId, userId), HttpStatus.CREATED);
 	}
+	
+	@DeleteMapping("/favourite/{productId}/in/{userId}")
+	public ResponseEntity<UserResponse> handleRemoveProductInFavourite(@PathVariable Long productId, @PathVariable Long userId) throws UserException, ProductException {
+		return new ResponseEntity<>(userService.removeFavouriteInUser(productId, userId), HttpStatus.OK);
+	}
+	
+	@DeleteMapping("/rate/{rateId}/by/{userId}")
+	public ResponseEntity<UserResponse> handleRemoveRateByUser(@PathVariable Long rateId, @PathVariable Long userId) throws RateException, UserException {
+		return new ResponseEntity<>(userService.removeRateInProductByUser(userId, rateId), HttpStatus.OK);
+	}
+	
 	
 	
 }
