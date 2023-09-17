@@ -13,16 +13,20 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ra.exception.ProductException;
 import ra.exception.RoleException;
 import ra.exception.UserException;
 import ra.mapper.user.UserMapper;
 import ra.model.domain.ERole;
+import ra.model.domain.Product;
 import ra.model.domain.Roles;
 import ra.model.domain.Users;
+import ra.model.dto.request.RateRequest;
 import ra.model.dto.request.UserLogin;
 import ra.model.dto.request.UserRegister;
 import ra.model.dto.response.JwtResponse;
 import ra.model.dto.response.UserResponse;
+import ra.repository.IProductRepository;
 import ra.repository.IUserRepository;
 import ra.security.jwt.JwtEntryPoint;
 import ra.security.jwt.JwtProvider;
@@ -52,6 +56,8 @@ public class UserService implements IUserService {
 	private AuthenticationManager authenticationManager;
 	@Autowired
 	private JwtProvider jwtProvider;
+	@Autowired
+	private IProductRepository productRepository;
 	
 	@Override
 	public Page<UserResponse> findAll(Pageable pageable, Optional<String> fullName) {
@@ -149,4 +155,39 @@ public class UserService implements IUserService {
 				  .status(userPrinciple.isStatus())
 				  .build();
 	}
+	
+	@Override
+	public UserResponse changeStatus(Long id) throws UserException {
+		Users users = findUserById(id);
+		users.setStatus(!users.isStatus());
+		return userMapper.toResponse(userRepository.save(users));
+	}
+	
+	@Override
+	public UserResponse addProductToFavourite(Long productId, Long userId) throws UserException, ProductException {
+		Users users = findUserById(userId);
+		Product product = findProductById(productId);
+		users.getFavourites().add(product);
+		return userMapper.toResponse(userRepository.save(users));
+	}
+	
+	@Override
+	public UserResponse rateProductByUser(RateRequest rateRequest, Long productId, Long userId) throws ProductException, UserException {
+		Product product = findProductById(productId);
+		Users users = findUserById(userId);
+		// làm nột phần đánh giá
+		
+		return null;
+	}
+	
+	public Product findProductById(Long productId) throws ProductException {
+		Optional<Product> optionalProduct = productRepository.findById(productId);
+		return optionalProduct.orElseThrow(() -> new ProductException("product not found"));
+	}
+	
+	public Users findUserById(Long id) throws UserException {
+		Optional<Users> optionalUsers = userRepository.findById(id);
+		return optionalUsers.orElseThrow(() -> new UserException("user not found"));
+	}
+	
 }

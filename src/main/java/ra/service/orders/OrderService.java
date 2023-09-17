@@ -6,13 +6,18 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ra.exception.OrderException;
+import ra.exception.ProductException;
+import ra.exception.UserException;
 import ra.mapper.orders.OrderMapper;
-import ra.model.domain.EDelivered;
-import ra.model.domain.Orders;
+import ra.model.domain.*;
 import ra.model.dto.request.OrderRequest;
 import ra.model.dto.response.OrderResponse;
 import ra.repository.IOrderRepository;
+import ra.repository.IProductRepository;
+import ra.repository.IUserRepository;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +29,10 @@ public class OrderService implements IOrderService {
 	private IOrderRepository orderRepository;
 	@Autowired
 	private OrderMapper orderMapper;
+	@Autowired
+	private IUserRepository userRepository;
+	@Autowired
+	private IProductRepository productRepository;
 	
 	@Override
 	public Page<OrderResponse> findAll(Pageable pageable, Optional<String> phone) {
@@ -92,6 +101,40 @@ public class OrderService implements IOrderService {
 		}
 		return orderMapper.toResponse(orderRepository.save(orders));
 	}
+	
+	@Override
+	public OrderResponse BuyProductInCartUser(Long productId, Long userId) throws ProductException, UserException {
+		Users users = findUserById(userId);
+		Product product = findProductById(productId);
+		
+		List<CartItem> list = new ArrayList<>();
+		list.add(CartItem.builder().product(product).price(product.getPrice()).quantity(1).status(true).build());
+		Orders orders = Orders.builder()
+				  .eDelivered(EDelivered.PENDING)
+				  .deliveryTime(new Date())
+				  .location(users.getAddress())
+				  .phone(users.getPhone())
+				  .total(product.getPrice())
+				  .list(list)
+				  .users(users)
+				  .status(false)
+				  .build();
+		users.getOrders().add(orders);
+		userRepository.save(users);
+		return orderMapper.toResponse(orderRepository.save(orders));
+	}
+	
+	
+	public Users findUserById(Long userId) throws UserException {
+		Optional<Users> optionalUsers = userRepository.findById(userId);
+		return optionalUsers.orElseThrow(() -> new UserException("user not found"));
+	}
+	
+	public Product findProductById(Long productId) throws ProductException {
+		Optional<Product> optionalProduct = productRepository.findById(productId);
+		return optionalProduct.orElseThrow(() -> new ProductException("product not found"));
+	}
+	
 	
 	public Orders findOrderById(Long id) throws OrderException {
 		Optional<Orders> optionalOrders = orderRepository.findById(id);

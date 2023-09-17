@@ -15,6 +15,8 @@ import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ProductResponse;
 import ra.service.product.IProductService;
 
+import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/product")
@@ -26,8 +28,8 @@ public class ProductController {
 	
 	
 	@GetMapping("/get_all")
-	public ResponseEntity<Page<ProductResponse>> getAllProducts(@PageableDefault(page = 0, size = 3) Pageable pageable) {
-		return new ResponseEntity<>(productService.findAll(pageable), HttpStatus.OK);
+	public ResponseEntity<Page<ProductResponse>> getAllProducts(@PageableDefault(page = 0, size = 3) Pageable pageable, @RequestParam(value = "search", defaultValue = "") Optional<String> search) {
+		return new ResponseEntity<>(productService.findAll(pageable, search), HttpStatus.OK);
 	}
 	
 	@GetMapping("/get/{id}")

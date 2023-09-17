@@ -28,6 +28,9 @@ public class UserMapper implements IGenericMapper<Users, UserRegister, UserRespo
 				  .phone(users.getPhone())
 				  .address(users.getAddress())
 				  .roles(users.getRoles().stream().map(item -> item.getRoleName().name()).collect(Collectors.toSet()))
+				  .favourites(users.getFavourites())
+				  .rates(users.getRates())
+				  .orders(users.getOrders())
 				  .status(users.isStatus())
 				  .build();
 	}
