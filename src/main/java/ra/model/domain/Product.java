@@ -37,7 +37,7 @@ public class Product {
 	@Column(name = "view_count")
 	private int viewCount;
 	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "category_id")
 	private Category category;
 	

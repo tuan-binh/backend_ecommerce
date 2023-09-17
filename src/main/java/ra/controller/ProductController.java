@@ -32,7 +32,8 @@ public class ProductController {
 	
 	@GetMapping("/get/{id}")
 	public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) throws ProductException {
-		return new ResponseEntity<>(productService.findById(id), HttpStatus.OK);
+		ProductResponse productResponse = productService.findById(id);
+		return new ResponseEntity<>(productResponse, HttpStatus.OK);
 	}
 	
 	@PostMapping("/add")

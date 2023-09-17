@@ -56,7 +56,11 @@ public class ProductService implements IProductService {
 	@Override
 	public ProductResponse findById(Long id) throws ProductException {
 		Optional<Product> optionalProduct = productRepository.findById(id);
-		return optionalProduct.map(item -> productMapper.toResponse(item)).orElseThrow(() -> new ProductException("product not found"));
+		if (optionalProduct.isPresent()) {
+			return productMapper.toResponse(optionalProduct.get());
+		}
+		throw new ProductException("product not found");
+//		return optionalProduct.map(item -> productMapper.toResponse(item)).orElseThrow(() -> new ProductException("product not found"));
 	}
 	
 	@Override
