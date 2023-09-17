@@ -4,7 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ra.model.domain.*;
+import ra.model.domain.Category;
+import ra.model.domain.Color;
+import ra.model.domain.Rates;
+import ra.model.domain.Size;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +39,7 @@ public class ProductResponse {
 	
 	private Set<Size> size;
 	
-	private List<ImageProduct> images;
+	private List<ImageResponse> images;
 	
 	private List<Rates> rates = new ArrayList<>();
 	private boolean status;

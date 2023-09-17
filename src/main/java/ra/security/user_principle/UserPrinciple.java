@@ -8,9 +8,14 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import ra.model.domain.Orders;
+import ra.model.domain.Product;
+import ra.model.domain.Rates;
 import ra.model.domain.Users;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -31,6 +36,9 @@ public class UserPrinciple implements UserDetails {
 	private String phone;
 	
 	private String address;
+	private List<Product> favourites = new ArrayList<>();
+	private List<Rates> rates = new ArrayList<>();
+	private List<Orders> orders = new ArrayList<>();
 	
 	private Collection<? extends GrantedAuthority> authorities;
 	private boolean status;
@@ -43,6 +51,9 @@ public class UserPrinciple implements UserDetails {
 				  .password(users.getPassword())
 				  .phone(users.getPhone())
 				  .address(users.getAddress())
+				  .favourites(users.getFavourites())
+				  .rates(users.getRates())
+				  .orders(users.getOrders())
 				  .authorities(users.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getRoleName().name())).collect(Collectors.toList()))
 				  .status(users.isStatus())
 				  .build();

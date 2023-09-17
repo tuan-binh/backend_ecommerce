@@ -142,6 +142,9 @@ public class UserService implements IUserService {
 				  .email(userPrinciple.getEmail())
 				  .phone(userPrinciple.getPhone())
 				  .address(userPrinciple.getAddress())
+				  .favourites(userPrinciple.getFavourites())
+				  .rates(userPrinciple.getRates())
+				  .orders(userPrinciple.getOrders())
 				  .roles(roles)
 				  .status(userPrinciple.isStatus())
 				  .build();
