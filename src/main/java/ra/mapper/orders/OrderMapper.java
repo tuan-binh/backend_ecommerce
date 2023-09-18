@@ -1,24 +1,34 @@
 package ra.mapper.orders;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ra.exception.CouponException;
 import ra.mapper.IGenericMapper;
+import ra.model.domain.Coupon;
 import ra.model.domain.EDelivered;
 import ra.model.domain.Orders;
 import ra.model.dto.request.OrderRequest;
 import ra.model.dto.response.OrderResponse;
+import ra.repository.ICouponRepository;
+import ra.service.coupon.CouponService;
+
+import java.util.Optional;
 
 @Component
 public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderResponse> {
 	
+	@Autowired
+	private ICouponRepository couponRepository;
+	
 	@Override
-	public Orders toEntity(OrderRequest orderRequest) {
+	public Orders toEntity(OrderRequest orderRequest) throws CouponException {
 		return Orders.builder()
 				  .eDelivered(findEDeliveredByString(orderRequest.getEDelivered()))
 				  .deliveryTime(orderRequest.getDeliveryTime())
 				  .location(orderRequest.getLocation())
 				  .phone(orderRequest.getPhone())
 				  .total(orderRequest.getTotal())
-				  .coupon(orderRequest.getCoupon())
+				  .coupon(findCouponById(orderRequest.getCouponId()))
 				  .status(orderRequest.isStatus())
 				  .build();
 	}
@@ -51,6 +61,11 @@ public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderRe
 				return EDelivered.CANCEL;
 		}
 		throw new RuntimeException("Lỗi không đúng định dạng order");
+	}
+	
+	public Coupon findCouponById(Long couponId) throws CouponException {
+		Optional<Coupon> optionalCoupon = couponRepository.findById(couponId);
+		return optionalCoupon.orElseThrow(() -> new CouponException("coupon not found"));
 	}
 	
 }

@@ -3,9 +3,7 @@ package ra.service.product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
-import ra.exception.CategoryException;
-import ra.exception.ImageProductException;
-import ra.exception.ProductException;
+import ra.exception.*;
 import ra.model.dto.request.ProductDetailRequest;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
@@ -22,9 +20,9 @@ public interface IProductService {
 	
 	ProductResponse findById(Long id) throws ProductException;
 	
-	ProductResponse save(ProductRequest productRequest) throws ProductException;
+	ProductResponse save(ProductRequest productRequest) throws ProductException, CategoryException;
 	
-	ProductResponse update(ProductUpdate productUpdate, Long id);
+	ProductResponse update(ProductUpdate productUpdate, Long id) throws CategoryException;
 	
 	ProductResponse changeStatus(Long id) throws ProductException;
 	
@@ -32,7 +30,7 @@ public interface IProductService {
 	
 	ProductResponse deleteImageInProduct(Long idImage, Long idProduct) throws ImageProductException, ProductException;
 	
-	ProductDetailResponse addProductDetailToProduct(ProductDetailRequest productDetailRequest);
+	ProductDetailResponse addProductDetailToProduct(ProductDetailRequest productDetailRequest) throws ColorException, ProductException, SizeException;
 	
 	ProductResponse addCategoryToProduct(Long categoryId, Long productId) throws ProductException, CategoryException;
 	

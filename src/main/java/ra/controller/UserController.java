@@ -45,21 +45,5 @@ public class UserController {
 		return new ResponseEntity<>(userService.changeStatus(id), HttpStatus.OK);
 	}
 	
-	@GetMapping("/getFavourite")
-	public ResponseEntity<List<ProductResponse>> getFavourite(Authentication authentication) throws UserException {
-		return new ResponseEntity<>(userService.getFavourite(authentication), HttpStatus.OK);
-	}
-	
-	@PostMapping("/favourite/{productId}")
-	public ResponseEntity<List<ProductResponse>> handleAddProductToFavourite(@PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
-		return new ResponseEntity<>(userService.addProductToFavourite(productId, authentication), HttpStatus.CREATED);
-	}
-	
-	@DeleteMapping("/favourite/{productId}")
-	public ResponseEntity<List<ProductResponse>> handleRemoveProductInFavourite(@PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
-		return new ResponseEntity<>(userService.removeProductInFavourite(productId, authentication), HttpStatus.OK);
-	}
-	
-	
 	
 }

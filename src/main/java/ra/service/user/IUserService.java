@@ -33,10 +33,4 @@ public interface IUserService {
 	
 	UserResponse changeStatus(Long id) throws UserException;
 	
-	List<ProductResponse> addProductToFavourite(Long productId, Authentication authentication) throws UserException, ProductException;
-	
-	List<ProductResponse> removeProductInFavourite(Long productId, Authentication authentication) throws UserException, ProductException;
-	
-	List<ProductResponse> getFavourite(Authentication authentication) throws UserException;
-	
 }

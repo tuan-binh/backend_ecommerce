@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import ra.exception.CouponException;
 import ra.exception.OrderException;
 import ra.exception.ProductException;
 import ra.exception.UserException;
@@ -52,12 +53,12 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public OrderResponse save(OrderRequest orderRequest) {
+	public OrderResponse save(OrderRequest orderRequest) throws CouponException {
 		return orderMapper.toResponse(orderRepository.save(orderMapper.toEntity(orderRequest)));
 	}
 	
 	@Override
-	public OrderResponse update(OrderRequest orderRequest, Long id) {
+	public OrderResponse update(OrderRequest orderRequest, Long id) throws CouponException {
 		Orders orders = orderMapper.toEntity(orderRequest);
 		orders.setId(id);
 		return orderMapper.toResponse(orderRepository.save(orders));

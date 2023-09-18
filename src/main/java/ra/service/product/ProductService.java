@@ -73,7 +73,7 @@ public class ProductService implements IProductService {
 	}
 	
 	@Override
-	public ProductResponse save(ProductRequest productRequest) throws ProductException {
+	public ProductResponse save(ProductRequest productRequest) throws ProductException, CategoryException {
 		
 		Product product = productMapper.toEntity(productRequest);
 		if (productRepository.existsByProductName(product.getProductName())) {
@@ -98,7 +98,7 @@ public class ProductService implements IProductService {
 	}
 	
 	@Override
-	public ProductResponse update(ProductUpdate productUpdate, Long id) {
+	public ProductResponse update(ProductUpdate productUpdate, Long id) throws CategoryException {
 		Product product = productMapper.toEntity(productUpdate);
 		product.setId(id);
 		return productMapper.toResponse(productRepository.save(product));
@@ -133,7 +133,7 @@ public class ProductService implements IProductService {
 	}
 	
 	@Override
-	public ProductDetailResponse addProductDetailToProduct(ProductDetailRequest productDetailRequest) {
+	public ProductDetailResponse addProductDetailToProduct(ProductDetailRequest productDetailRequest) throws ColorException, ProductException, SizeException {
 		return productDetailMapper.toResponse(productDetailRepository.save(productDetailMapper.toEntity(productDetailRequest)));
 	}
 	

@@ -59,12 +59,12 @@ public class RateService implements IRateService {
 	}
 	
 	@Override
-	public RateResponse save(RateRequest rateRequest) {
+	public RateResponse save(RateRequest rateRequest) throws ProductException {
 		return rateMapper.toResponse(rateRepository.save(rateMapper.toEntity(rateRequest)));
 	}
 	
 	@Override
-	public RateResponse update(RateRequest rateRequest, Long id) {
+	public RateResponse update(RateRequest rateRequest, Long id) throws ProductException {
 		Rates rates = rateMapper.toEntity(rateRequest);
 		rates.setId(id);
 		return rateMapper.toResponse(rateRepository.save(rates));
@@ -78,22 +78,30 @@ public class RateService implements IRateService {
 	}
 	
 	@Override
-	public RateResponse rateProductByUser(RateRequest rateRequest, Long productId, Authentication authentication) throws ProductException, UserException {
+	public RateResponse rateProductByUser(RateRequest rateRequest, Authentication authentication) throws ProductException, UserException {
 		Users users = findUserByAuthentication(authentication);
-		Product product = findProductById(productId);
 		Rates rates = rateMapper.toEntity(rateRequest);
-		
-		return null;
+		rates.setUsers(users);
+		return rateMapper.toResponse(rateRepository.save(rates));
 	}
 	
 	@Override
-	public RateResponse updateRateInProduct(RateRequest rateRequest, Long rateId, Long productId, Authentication authentication) throws RateException, ProductException, UserException {
-		return null;
+	public RateResponse updateRateInProduct(RateRequest rateRequest, Long rateId, Authentication authentication) throws RateException, ProductException, UserException {
+		Users users = findUserByAuthentication(authentication);
+		Rates rates = rateMapper.toEntity(rateRequest);
+		rates.setId(rateId);
+		rates.setUsers(users);
+		return rateMapper.toResponse(rateRepository.save(rates));
 	}
 	
 	@Override
-	public RateResponse removeRateInProductByUser(Long rateId, Long productId, Authentication authentication) throws RateException, UserException, ProductException {
-		return null;
+	public RateResponse removeRateInProductByUser(Long rateId, Authentication authentication) throws RateException, UserException, ProductException {
+		Optional<Rates> optionalRates = rateRepository.findById(rateId);
+		if (optionalRates.isPresent()) {
+			rateRepository.deleteById(rateId);
+			return rateMapper.toResponse(optionalRates.get());
+		}
+		throw new RateException("rate not found");
 	}
 	
 	public Rates findRatesById(Long id) throws RateException {

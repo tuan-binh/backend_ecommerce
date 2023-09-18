@@ -3,6 +3,7 @@ package ra.service.orders;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
+import ra.exception.CouponException;
 import ra.exception.OrderException;
 import ra.exception.ProductException;
 import ra.exception.UserException;
@@ -18,9 +19,9 @@ public interface IOrderService {
 	
 	OrderResponse findById(Long id) throws OrderException;
 	
-	OrderResponse save(OrderRequest orderRequest);
+	OrderResponse save(OrderRequest orderRequest) throws CouponException;
 	
-	OrderResponse update(OrderRequest orderRequest, Long id);
+	OrderResponse update(OrderRequest orderRequest, Long id) throws CouponException;
 	
 	OrderResponse changeStatus(Long id) throws OrderException;
 	

@@ -28,19 +28,19 @@ public class RateController {
 		return new ResponseEntity<>(rateService.findAllByProductId(pageable, productId), HttpStatus.OK);
 	}
 	
-	@PostMapping("/add_rate/{productId}")
-	public ResponseEntity<RateResponse> handleRateProductByUser(@RequestBody RateRequest rateRequest, @PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
-		return new ResponseEntity<>(rateService.rateProductByUser(rateRequest, productId, authentication), HttpStatus.CREATED);
+	@PostMapping("/add_rate")
+	public ResponseEntity<RateResponse> handleRateProductByUser(@RequestBody RateRequest rateRequest, Authentication authentication) throws UserException, ProductException {
+		return new ResponseEntity<>(rateService.rateProductByUser(rateRequest, authentication), HttpStatus.CREATED);
 	}
 	
-	@PutMapping("/update_rate/{rateId}/in/{productId}")
-	public ResponseEntity<RateResponse> handleUpdateRateInProduct(@RequestBody RateRequest rateRequest, @PathVariable Long rateId, @PathVariable Long productId, Authentication authentication) throws RateException, UserException, ProductException {
-		return new ResponseEntity<>(rateService.updateRateInProduct(rateRequest, rateId, productId, authentication), HttpStatus.OK);
+	@PutMapping("/update_rate/{rateId}")
+	public ResponseEntity<RateResponse> handleUpdateRateInProduct(@RequestBody RateRequest rateRequest, @PathVariable Long rateId, Authentication authentication) throws RateException, UserException, ProductException {
+		return new ResponseEntity<>(rateService.updateRateInProduct(rateRequest, rateId, authentication), HttpStatus.OK);
 	}
 	
-	@DeleteMapping("/remove_rate/{rateId}/in/{productId}")
-	public ResponseEntity<RateResponse> handleRemoveRateByUser(@PathVariable Long rateId, @PathVariable Long productId, Authentication authentication) throws RateException, UserException, ProductException {
-		return new ResponseEntity<>(rateService.removeRateInProductByUser(rateId, productId, authentication), HttpStatus.OK);
+	@DeleteMapping("/remove_rate/{rateId}")
+	public ResponseEntity<RateResponse> handleRemoveRateByUser(@PathVariable Long rateId, Authentication authentication) throws RateException, UserException, ProductException {
+		return new ResponseEntity<>(rateService.removeRateInProductByUser(rateId, authentication), HttpStatus.OK);
 	}
 	
 }

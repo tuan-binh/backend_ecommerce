@@ -17,16 +17,16 @@ public interface IRateService {
 	
 	RateResponse findById(Long id) throws RateException;
 	
-	RateResponse save(RateRequest rateRequest);
+	RateResponse save(RateRequest rateRequest) throws ProductException;
 	
-	RateResponse update(RateRequest rateRequest, Long id);
+	RateResponse update(RateRequest rateRequest, Long id) throws ProductException;
 	
 	RateResponse changeStatus(Long id) throws RateException;
 	
-	RateResponse rateProductByUser(RateRequest rateRequest, Long productId, Authentication authentication) throws ProductException, UserException;
+	RateResponse rateProductByUser(RateRequest rateRequest, Authentication authentication) throws ProductException, UserException;
 	
-	RateResponse updateRateInProduct(RateRequest rateRequest,Long rateId, Long productId, Authentication authentication) throws RateException, ProductException, UserException;
+	RateResponse updateRateInProduct(RateRequest rateRequest,Long rateId, Authentication authentication) throws RateException, ProductException, UserException;
 	
-	RateResponse removeRateInProductByUser(Long rateId, Long productId, Authentication authentication) throws RateException, UserException, ProductException;
+	RateResponse removeRateInProductByUser(Long rateId, Authentication authentication) throws RateException, UserException, ProductException;
 	
 }
