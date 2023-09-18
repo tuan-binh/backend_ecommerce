@@ -58,11 +58,11 @@ public class Product {
 	private Set<Size> size;
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
-	private List<ImageProduct> images;
+	private List<ImageProduct> images = new ArrayList<>();
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	private List<CartItem> cartItems = new ArrayList<>();
-	
+
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	private List<Rates> rates = new ArrayList<>();
 	

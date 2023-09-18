@@ -62,10 +62,21 @@ public class ProductController {
 		return new ResponseEntity<>(productService.deleteImageInProduct(idImage, idProduct), HttpStatus.OK);
 	}
 	
+	@PostMapping("/add_color/{colorId}/to/{productId}")
+	public ResponseEntity<ProductResponse> handleAddColorToProduct(@PathVariable Long colorId, @PathVariable Long productId) throws ColorException, ProductException {
+		return new ResponseEntity<>(productService.addColorToProduct(colorId, productId), HttpStatus.CREATED);
+	}
+	
 	@DeleteMapping("/delete_color/{productId}/color/{colorId}")
 	public ResponseEntity<ProductResponse> handleDeleteColor(@PathVariable Long productId, @PathVariable Long colorId) throws ColorException, ProductException {
 		return new ResponseEntity<>(productService.deleteColorInProduct(productId, colorId), HttpStatus.OK);
 	}
+	
+	@PostMapping("/add_size/{sizeId}/to/{productId}")
+	public ResponseEntity<ProductResponse> handleAddSizeToProduct(@PathVariable Long sizeId, @PathVariable Long productId) throws SizeException, ProductException {
+		return new ResponseEntity<>(productService.addSizeToProduct(sizeId, productId), HttpStatus.CREATED);
+	}
+	
 	
 	@DeleteMapping("/delete_size/{productId}/size/{sizeId}")
 	public ResponseEntity<ProductResponse> handleDeleteSize(@PathVariable Long productId, @PathVariable Long sizeId) throws ProductException, SizeException {
@@ -77,7 +88,7 @@ public class ProductController {
 		return new ResponseEntity<>(productService.addCategoryToProduct(categoryId, productId), HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/remve_category/{productId}")
+	@DeleteMapping("/remove_category/{productId}")
 	public ResponseEntity<ProductResponse> handleRemoveCategoryInProduct(@PathVariable Long productId) throws ProductException {
 		return new ResponseEntity<>(productService.removeCategoryInProduct(productId), HttpStatus.OK);
 	}

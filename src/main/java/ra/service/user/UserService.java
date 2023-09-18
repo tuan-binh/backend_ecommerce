@@ -17,12 +17,15 @@ import ra.exception.ProductException;
 import ra.exception.RateException;
 import ra.exception.RoleException;
 import ra.exception.UserException;
+import ra.mapper.product.ProductMapper;
+import ra.mapper.rate.RateMapper;
 import ra.mapper.user.UserMapper;
 import ra.model.domain.*;
 import ra.model.dto.request.RateRequest;
 import ra.model.dto.request.UserLogin;
 import ra.model.dto.request.UserRegister;
 import ra.model.dto.response.JwtResponse;
+import ra.model.dto.response.ProductResponse;
 import ra.model.dto.response.UserResponse;
 import ra.repository.IProductRepository;
 import ra.repository.IRateRepository;
@@ -32,7 +35,10 @@ import ra.security.jwt.JwtProvider;
 import ra.security.user_principle.UserPrinciple;
 import ra.service.role.IRoleService;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,6 +62,10 @@ public class UserService implements IUserService {
 	private IProductRepository productRepository;
 	@Autowired
 	private IRateRepository rateRepository;
+	@Autowired
+	private ProductMapper productMapper;
+	@Autowired
+	private RateMapper rateMapper;
 	
 	@Override
 	public Page<UserResponse> findAll(Pageable pageable, Optional<String> fullName) {
@@ -146,9 +156,6 @@ public class UserService implements IUserService {
 				  .email(userPrinciple.getEmail())
 				  .phone(userPrinciple.getPhone())
 				  .address(userPrinciple.getAddress())
-				  .favourites(userPrinciple.getFavourites())
-				  .rates(userPrinciple.getRates())
-				  .orders(userPrinciple.getOrders())
 				  .roles(roles)
 				  .status(userPrinciple.isStatus())
 				  .build();
@@ -162,44 +169,65 @@ public class UserService implements IUserService {
 	}
 	
 	@Override
-	public UserResponse addProductToFavourite(Long productId, Long userId) throws UserException, ProductException {
-		Users users = findUserById(userId);
+	public List<ProductResponse> addProductToFavourite(Long productId, Authentication authentication) throws UserException, ProductException {
+		Users users = findUserByAuthentication(authentication);
 		Product product = findProductById(productId);
 		users.getFavourites().add(product);
-		return userMapper.toResponse(userRepository.save(users));
+		return userRepository.save(users).getFavourites().stream()
+				  .map(item -> productMapper.toResponse(item))
+				  .collect(Collectors.toList());
 	}
 	
 	@Override
-	public UserResponse rateProductByUser(RateRequest rateRequest, Long productId, Long userId) throws ProductException, UserException {
+	public List<ProductResponse> removeProductInFavourite(Long productId, Authentication authentication) throws UserException, ProductException {
+		Users users = findUserByAuthentication(authentication);
 		Product product = findProductById(productId);
-		Users users = findUserById(userId);
-		users.getRates().add(Rates.builder()
+		users.getFavourites().remove(product);
+		return userRepository.save(users).getFavourites().stream()
+				  .map(item -> productMapper.toResponse(item))
+				  .collect(Collectors.toList());
+	}
+	
+	@Override
+	public ProductResponse rateProductByUser(RateRequest rateRequest, Long productId, Authentication authentication) throws ProductException, UserException {
+		Product product = findProductById(productId);
+		Users users = findUserByAuthentication(authentication);
+		Rates rate = Rates.builder()
 				  .rating(rateRequest.getRating())
 				  .content(rateRequest.getContent())
 				  .product(product)
 				  .users(users)
 				  .status(true)
-				  .build());
-		return userMapper.toResponse(userRepository.save(users));
+				  .build();
+		product.getRates().add(rate);
+		users.getRates().add(rate);
+		userRepository.save(users);
+		return productMapper.toResponse(productRepository.save(product));
 	}
 	
 	@Override
-	public UserResponse removeFavouriteInUser(Long productId, Long userId) throws ProductException, UserException {
+	public ProductResponse updateRateInProduct(RateRequest rateRequest, Long rateId, Long productId, Authentication authentication) throws RateException, ProductException, UserException {
+		Users users = findUserByAuthentication(authentication);
 		Product product = findProductById(productId);
-		Users users = findUserById(userId);
-		users.getFavourites().remove(product);
-		return userMapper.toResponse(userRepository.save(users));
+		Rates rate = rateMapper.toEntity(rateRequest);
+		rate.setId(rateId);
+		rateRepository.save(rate);
+		product.getRates().set(product.getRates().indexOf(findRateById(rateId)), rate);
+		users.getRates().set(users.getRates().indexOf(findRateById(rateId)), rate);
+		userRepository.save(users);
+		return productMapper.toResponse(productRepository.save(product));
 	}
 	
 	@Override
-	public UserResponse removeRateInProductByUser(Long userId, Long rateId) throws RateException, UserException {
-		Users users = findUserById(userId);
+	public ProductResponse removeRateInProductByUser(Long rateId, Long productId, Authentication authentication) throws RateException, UserException, ProductException {
+		Users users = findUserByAuthentication(authentication);
 		Rates rates = findRateById(rateId);
-		if (Objects.equals(users.getId(), rates.getUsers().getId())) {
-			rateRepository.delete(rates);
-			return userMapper.toResponse(userRepository.save(users));
-		}
-		throw new RateException("You do not have permission to delete rate");
+		Product product = findProductById(productId);
+		product.getRates().remove(rates);
+		users.getRates().remove(rates);
+		userRepository.save(users);
+		return productMapper.toResponse(productRepository.save(product));
+		
 	}
 	
 	public Rates findRateById(Long rateId) throws RateException {
@@ -214,6 +242,26 @@ public class UserService implements IUserService {
 	
 	public Users findUserById(Long id) throws UserException {
 		Optional<Users> optionalUsers = userRepository.findById(id);
+		return optionalUsers.orElseThrow(() -> new UserException("user not found"));
+	}
+	
+	@Override
+	public List<ProductResponse> getFavourite(Authentication authentication) throws UserException {
+		return findUserByAuthentication(authentication).getFavourites().stream()
+				  .map(item -> productMapper.toResponse(item))
+				  .collect(Collectors.toList());
+	}
+	
+	public Users findUserByAuthentication(Authentication authentication) throws UserException {
+		if (authentication != null && authentication.isAuthenticated()) {
+			String username = authentication.getName();
+			return findUserByEmail(username);
+		}
+		throw new UserException("Un Authentication");
+	}
+	
+	public Users findUserByEmail(String email) throws UserException {
+		Optional<Users> optionalUsers = findByEmail(email);
 		return optionalUsers.orElseThrow(() -> new UserException("user not found"));
 	}
 	

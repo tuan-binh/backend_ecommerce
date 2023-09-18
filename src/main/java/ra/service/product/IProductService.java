@@ -28,7 +28,11 @@ public interface IProductService {
 	
 	ProductResponse deleteImageInProduct(Long idImage, Long idProduct) throws ImageProductException, ProductException;
 	
+	ProductResponse addColorToProduct(Long colorId, Long productId) throws ColorException, ProductException;
+	
 	ProductResponse deleteColorInProduct(Long productId, Long colorId) throws ProductException, ColorException;
+	
+	ProductResponse addSizeToProduct(Long sizeId, Long productId) throws SizeException, ProductException;
 	
 	ProductResponse deleteSizeInProduct(Long productId, Long sizeId) throws ProductException, SizeException;
 	

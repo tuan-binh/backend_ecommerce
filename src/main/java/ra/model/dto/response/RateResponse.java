@@ -15,7 +15,5 @@ public class RateResponse {
 	private Long id;
 	private int rating;
 	private String content;
-	private Users users;
-	private Product product;
 	private boolean status;
 }

@@ -6,14 +6,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ra.exception.ProductException;
 import ra.exception.RateException;
 import ra.exception.UserException;
+import ra.mapper.product.ProductMapper;
 import ra.model.dto.request.RateRequest;
+import ra.model.dto.response.ProductResponse;
 import ra.model.dto.response.UserResponse;
 import ra.service.user.IUserService;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -23,6 +27,8 @@ public class UserController {
 	
 	@Autowired
 	private IUserService userService;
+	@Autowired
+	private ProductMapper productMapper;
 	
 	@GetMapping("/get_all")
 	public ResponseEntity<Page<UserResponse>> getAllUsers(@PageableDefault(page = 0, size = 3) Pageable pageable, @RequestParam(value = "search", defaultValue = "") Optional<String> search) {
@@ -39,26 +45,34 @@ public class UserController {
 		return new ResponseEntity<>(userService.changeStatus(id), HttpStatus.OK);
 	}
 	
-	@GetMapping("/favourite/{productId}/to/{userId}")
-	public ResponseEntity<UserResponse> handleAddProductToFavourite(@PathVariable Long productId, @PathVariable Long userId) throws UserException, ProductException {
-		return new ResponseEntity<>(userService.addProductToFavourite(productId, userId), HttpStatus.CREATED);
+	@GetMapping("/getFavourite")
+	public ResponseEntity<List<ProductResponse>> getFavourite(Authentication authentication) throws UserException {
+		return new ResponseEntity<>(userService.getFavourite(authentication), HttpStatus.OK);
 	}
 	
-	@PostMapping("/rate/{productId}/by/{userId}")
-	public ResponseEntity<UserResponse> handleRateProductByUser(@RequestBody RateRequest rateRequest, @PathVariable Long productId, @PathVariable Long userId) throws UserException, ProductException {
-		return new ResponseEntity<>(userService.rateProductByUser(rateRequest, productId, userId), HttpStatus.CREATED);
+	@PostMapping("/favourite/{productId}")
+	public ResponseEntity<List<ProductResponse>> handleAddProductToFavourite(@PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
+		return new ResponseEntity<>(userService.addProductToFavourite(productId, authentication), HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/favourite/{productId}/in/{userId}")
-	public ResponseEntity<UserResponse> handleRemoveProductInFavourite(@PathVariable Long productId, @PathVariable Long userId) throws UserException, ProductException {
-		return new ResponseEntity<>(userService.removeFavouriteInUser(productId, userId), HttpStatus.OK);
+	@DeleteMapping("/favourite/{productId}")
+	public ResponseEntity<List<ProductResponse>> handleRemoveProductInFavourite(@PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
+		return new ResponseEntity<>(userService.removeProductInFavourite(productId, authentication), HttpStatus.OK);
 	}
 	
-	@DeleteMapping("/rate/{rateId}/by/{userId}")
-	public ResponseEntity<UserResponse> handleRemoveRateByUser(@PathVariable Long rateId, @PathVariable Long userId) throws RateException, UserException {
-		return new ResponseEntity<>(userService.removeRateInProductByUser(userId, rateId), HttpStatus.OK);
+	@PostMapping("/add_rate/{productId}")
+	public ResponseEntity<ProductResponse> handleRateProductByUser(@RequestBody RateRequest rateRequest, @PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
+		return new ResponseEntity<>(userService.rateProductByUser(rateRequest, productId, authentication), HttpStatus.CREATED);
 	}
 	
+	@PutMapping("/update_rate/{rateId}/in/{productId}")
+	public ResponseEntity<ProductResponse> handleUpdateRateInProduct(@RequestBody RateRequest rateRequest, @PathVariable Long rateId, @PathVariable Long productId, Authentication authentication) throws RateException, UserException, ProductException {
+		return new ResponseEntity<>(userService.updateRateInProduct(rateRequest, rateId, productId, authentication), HttpStatus.OK);
+	}
 	
+	@DeleteMapping("/rate/{rateId}/in/{productId}")
+	public ResponseEntity<ProductResponse> handleRemoveRateByUser(@PathVariable Long rateId, @PathVariable Long productId, Authentication authentication) throws RateException, UserException, ProductException {
+		return new ResponseEntity<>(userService.removeRateInProductByUser(rateId, productId, authentication), HttpStatus.OK);
+	}
 	
 }

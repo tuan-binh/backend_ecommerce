@@ -17,6 +17,7 @@ import ra.service.upload_aws.StorageService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -147,6 +148,30 @@ public class ProductService implements IProductService {
 	public ProductResponse removeCategoryInProduct(Long productId) throws ProductException {
 		Product product = findProductById(productId);
 		product.setCategory(null);
+		return productMapper.toResponse(productRepository.save(product));
+	}
+	
+	@Override
+	public ProductResponse addColorToProduct(Long colorId, Long productId) throws ColorException, ProductException {
+		Color color = findColorById(colorId);
+		Product product = findProductById(productId);
+		boolean check = product.getColor().contains(color);
+		if(check) {
+			throw new ProductException("product has this color");
+		}
+		product.getColor().add(color);
+		return productMapper.toResponse(productRepository.save(product));
+	}
+	
+	@Override
+	public ProductResponse addSizeToProduct(Long sizeId, Long productId) throws SizeException, ProductException {
+		Size size = findSizeById(sizeId);
+		Product product = findProductById(productId);
+		boolean check = product.getSize().contains(size);
+		if(check) {
+			throw new ProductException("product has this size");
+		}
+		product.getSize().add(size);
 		return productMapper.toResponse(productRepository.save(product));
 	}
 	

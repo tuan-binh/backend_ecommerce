@@ -2,6 +2,7 @@ package ra.service.orders;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.PathVariable;
 import ra.exception.OrderException;
 import ra.exception.ProductException;
 import ra.exception.UserException;
@@ -24,6 +25,8 @@ public interface IOrderService {
 	
 	OrderResponse changeDelivery(String typeDelivery, Long id) throws OrderException;
 	
-	OrderResponse BuyProductInCartUser(Long productId, Long userId) throws ProductException, UserException;
+	OrderResponse buyProductInCartUser(Long productId, Long userId) throws ProductException, UserException;
+	
+	OrderResponse addProductToOrderUser(Long productId,Long orderId);
 	
 }

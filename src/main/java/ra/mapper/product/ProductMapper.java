@@ -7,6 +7,7 @@ import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ImageResponse;
 import ra.model.dto.response.ProductResponse;
+import ra.model.dto.response.RateResponse;
 
 import java.util.stream.Collectors;
 
@@ -58,8 +59,16 @@ public class ProductMapper implements IGenericMapper<Product, ProductRequest, Pr
 				  .category(product.getCategory())
 				  .color(product.getColor())
 				  .size(product.getSize())
-				  .images(product.getImages().stream().map(item -> ImageResponse.builder().id(item.getId()).image(item.getImage()).build()).collect(Collectors.toList()))
-				  .rates(product.getRates())
+				  .images(product.getImages().stream().map(item -> ImageResponse.builder()
+						    .id(item.getId())
+						    .image(item.getImage())
+						    .build()).collect(Collectors.toList()))
+				  .rates(product.getRates().stream().map(item -> RateResponse.builder()
+							 .id(item.getId())
+							 .rating(item.getRating())
+							 .content(item.getContent())
+							 .status(item.isStatus())
+							 .build()).collect(Collectors.toList()))
 				  .status(product.isStatus())
 				  .build();
 	}

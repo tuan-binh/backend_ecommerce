@@ -41,6 +41,6 @@ public class ProductResponse {
 	
 	private List<ImageResponse> images;
 	
-	private List<Rates> rates = new ArrayList<>();
+	private List<RateResponse> rates = new ArrayList<>();
 	private boolean status;
 }

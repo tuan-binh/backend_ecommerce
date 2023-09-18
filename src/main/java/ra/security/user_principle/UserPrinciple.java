@@ -36,9 +36,6 @@ public class UserPrinciple implements UserDetails {
 	private String phone;
 	
 	private String address;
-	private List<Product> favourites = new ArrayList<>();
-	private List<Rates> rates = new ArrayList<>();
-	private List<Orders> orders = new ArrayList<>();
 	
 	private Collection<? extends GrantedAuthority> authorities;
 	private boolean status;
@@ -51,9 +48,6 @@ public class UserPrinciple implements UserDetails {
 				  .password(users.getPassword())
 				  .phone(users.getPhone())
 				  .address(users.getAddress())
-				  .favourites(users.getFavourites())
-				  .rates(users.getRates())
-				  .orders(users.getOrders())
 				  .authorities(users.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getRoleName().name())).collect(Collectors.toList()))
 				  .status(users.isStatus())
 				  .build();

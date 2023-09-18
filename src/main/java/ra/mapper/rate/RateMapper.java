@@ -14,8 +14,6 @@ public class RateMapper implements IGenericMapper<Rates, RateRequest, RateRespon
 		return Rates.builder()
 				  .rating(rateRequest.getRating())
 				  .content(rateRequest.getContent())
-				  .users(rateRequest.getUsers())
-				  .product(rateRequest.getProduct())
 				  .status(rateRequest.isStatus())
 				  .build();
 	}
@@ -26,8 +24,6 @@ public class RateMapper implements IGenericMapper<Rates, RateRequest, RateRespon
 				  .id(rates.getId())
 				  .rating(rates.getRating())
 				  .content(rates.getContent())
-				  .users(rates.getUsers())
-				  .product(rates.getProduct())
 				  .status(rates.isStatus())
 				  .build();
 	}
