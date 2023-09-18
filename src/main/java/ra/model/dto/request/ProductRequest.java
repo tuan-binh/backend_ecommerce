@@ -5,14 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
-import ra.model.domain.Category;
-import ra.model.domain.Color;
-import ra.model.domain.Rates;
-import ra.model.domain.Size;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,17 +21,11 @@ public class ProductRequest {
 	
 	private double price;
 	
-	private int stock;
-	
 	private int viewCount;
 	
-	private Category category;
+	private Long categoryId;
 	
-	private Set<Color> color;
-	
-	private Set<Size> size;
-	
-	private List<MultipartFile> file;
+	private List<MultipartFile> file = new ArrayList<>();
 	
 	private boolean status;
 	

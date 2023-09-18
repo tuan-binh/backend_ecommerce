@@ -37,12 +37,6 @@ public interface IUserService {
 	
 	List<ProductResponse> removeProductInFavourite(Long productId, Authentication authentication) throws UserException, ProductException;
 	
-	ProductResponse rateProductByUser(RateRequest rateRequest, Long productId, Authentication authentication) throws ProductException, UserException;
-	
-	ProductResponse updateRateInProduct(RateRequest rateRequest,Long rateId, Long productId, Authentication authentication) throws RateException, ProductException, UserException;
-	
-	ProductResponse removeRateInProductByUser(Long rateId, Long productId, Authentication authentication) throws RateException, UserException, ProductException;
-	
 	List<ProductResponse> getFavourite(Authentication authentication) throws UserException;
 	
 }

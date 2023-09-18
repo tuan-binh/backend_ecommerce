@@ -8,16 +8,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ra.exception.*;
 import ra.mapper.product.ProductMapper;
+import ra.mapper.productDetail.ProductDetailMapper;
 import ra.model.domain.*;
+import ra.model.dto.request.ProductDetailRequest;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
+import ra.model.dto.response.ProductDetailResponse;
 import ra.model.dto.response.ProductResponse;
 import ra.repository.*;
 import ra.service.upload_aws.StorageService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,6 +40,10 @@ public class ProductService implements IProductService {
 	private ProductMapper productMapper;
 	@Autowired
 	private StorageService storageService;
+	@Autowired
+	private ProductDetailMapper productDetailMapper;
+	@Autowired
+	private IProductDetailRepository productDetailRepository;
 	
 	@Override
 	public Page<ProductResponse> findAll(Pageable pageable, Optional<String> productName) {
@@ -64,12 +70,16 @@ public class ProductService implements IProductService {
 			return productMapper.toResponse(optionalProduct.get());
 		}
 		throw new ProductException("product not found");
-//		return optionalProduct.map(item -> productMapper.toResponse(item)).orElseThrow(() -> new ProductException("product not found"));
 	}
 	
 	@Override
-	public ProductResponse save(ProductRequest productRequest) {
+	public ProductResponse save(ProductRequest productRequest) throws ProductException {
+		
 		Product product = productMapper.toEntity(productRequest);
+		if (productRepository.existsByProductName(product.getProductName())) {
+			throw new ProductException("exists product name");
+		}
+		
 		List<String> listUrl = new ArrayList<>();
 		for (MultipartFile m : productRequest.getFile()) {
 			listUrl.add(storageService.uploadFile(m));
@@ -82,6 +92,8 @@ public class ProductService implements IProductService {
 		}
 		// set list image vào product
 		product.setImages(images);
+		// khởi tạo dối tượng để khi mapper  sang đỡ lỗi
+		product.setRates(new ArrayList<>());
 		return productMapper.toResponse(productRepository.save(product));
 	}
 	
@@ -121,19 +133,8 @@ public class ProductService implements IProductService {
 	}
 	
 	@Override
-	public ProductResponse deleteColorInProduct(Long productId, Long colorId) throws ProductException, ColorException {
-		Product product = findProductById(productId);
-		Color color = findColorById(colorId);
-		product.getColor().remove(color);
-		return productMapper.toResponse(productRepository.save(product));
-	}
-	
-	@Override
-	public ProductResponse deleteSizeInProduct(Long productId, Long sizeId) throws ProductException, SizeException {
-		Product product = findProductById(productId);
-		Size size = findSizeById(sizeId);
-		product.getSize().remove(size);
-		return productMapper.toResponse(productRepository.save(product));
+	public ProductDetailResponse addProductDetailToProduct(ProductDetailRequest productDetailRequest) {
+		return productDetailMapper.toResponse(productDetailRepository.save(productDetailMapper.toEntity(productDetailRequest)));
 	}
 	
 	@Override
@@ -148,30 +149,6 @@ public class ProductService implements IProductService {
 	public ProductResponse removeCategoryInProduct(Long productId) throws ProductException {
 		Product product = findProductById(productId);
 		product.setCategory(null);
-		return productMapper.toResponse(productRepository.save(product));
-	}
-	
-	@Override
-	public ProductResponse addColorToProduct(Long colorId, Long productId) throws ColorException, ProductException {
-		Color color = findColorById(colorId);
-		Product product = findProductById(productId);
-		boolean check = product.getColor().contains(color);
-		if(check) {
-			throw new ProductException("product has this color");
-		}
-		product.getColor().add(color);
-		return productMapper.toResponse(productRepository.save(product));
-	}
-	
-	@Override
-	public ProductResponse addSizeToProduct(Long sizeId, Long productId) throws SizeException, ProductException {
-		Size size = findSizeById(sizeId);
-		Product product = findProductById(productId);
-		boolean check = product.getSize().contains(size);
-		if(check) {
-			throw new ProductException("product has this size");
-		}
-		product.getSize().add(size);
 		return productMapper.toResponse(productRepository.save(product));
 	}
 	

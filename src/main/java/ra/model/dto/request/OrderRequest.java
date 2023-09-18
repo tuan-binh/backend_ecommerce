@@ -19,8 +19,7 @@ public class OrderRequest {
 	private String location;
 	private String phone;
 	private double total;
-	private Users users;
-	private Coupon coupon;
+	private Long couponId;
 	private boolean status;
 	
 }

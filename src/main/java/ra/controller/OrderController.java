@@ -1,13 +1,13 @@
 package ra.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ra.model.domain.Orders;
-import ra.security.user_principle.UserDetailService;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import ra.exception.ProductException;
+import ra.exception.UserException;
+import ra.model.dto.response.OrderResponse;
 import ra.service.orders.IOrderService;
 
 import java.util.List;
@@ -21,19 +21,14 @@ public class OrderController {
 	private IOrderService orderService;
 	
 	@GetMapping("/getOrders")
-	public ResponseEntity<List<Orders>> getOrders() {
-//		List<Orders> orders = null;
-//		if (authentication != null && authentication.isAuthenticated()) {
-//			String username = authentication.getName(); // Lấy tên người dùng
-//			Users users = userDetailService.findByEmail(username);
-//			// Sau đó, bạn có thể sử dụng username để lấy order của người dùng.
-//			orders = new ArrayList<>(users.getOrders());
-//		}
-//		// Trả về danh sách các đơn hàng của người dùng.
-//		return new ResponseEntity<>(orders, HttpStatus.OK);
-		return null;
+	public ResponseEntity<List<OrderResponse>> getOrders(Authentication authentication) throws UserException {
+		return new ResponseEntity<>(orderService.getOrders(authentication), HttpStatus.OK);
 	}
-
+	
+	@PostMapping("/buy/{productId}")
+	public ResponseEntity<OrderResponse> addProductToOrders(@PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
+		return new ResponseEntity<>(orderService.addProductToOrder(productId, authentication), HttpStatus.CREATED);
+	}
 
 //	@PostMapping("/buy/{productId}/in_cart/{userId}")
 //	public ResponseEntity<OrderResponse> handleAddProductInCartUser(@PathVariable Long productId, @PathVariable Long userId) throws UserException, ProductException {

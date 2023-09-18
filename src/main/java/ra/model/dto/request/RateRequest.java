@@ -14,5 +14,7 @@ import ra.model.domain.Users;
 public class RateRequest {
 	private int rating;
 	private String content;
+	private Long userId;
+	
 	private boolean status;
 }

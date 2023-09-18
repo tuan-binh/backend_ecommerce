@@ -20,7 +20,6 @@ public class OrderResponse {
 	private String location;
 	private String phone;
 	private double total;
-	private Users users;
 	private Coupon coupon;
 	private boolean status;
 }

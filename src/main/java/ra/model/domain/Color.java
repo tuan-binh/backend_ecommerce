@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "colors")
@@ -21,6 +23,9 @@ public class Color {
 	
 	@Column(name = "color_name", nullable = false)
 	private String colorName;
+	
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "color")
+	Set<ProductDetail> productDetailSet = new HashSet<>();
 	
 	private boolean status;
 	

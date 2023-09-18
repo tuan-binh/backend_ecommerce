@@ -5,11 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ra.model.domain.Category;
-import ra.model.domain.Color;
-import ra.model.domain.Rates;
-import ra.model.domain.Size;
+import ra.model.domain.ProductDetail;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -29,18 +28,9 @@ public class ProductResponse {
 	
 	private double price;
 	
-	private int stock;
-	
 	private int viewCount;
 	
 	private Category category;
 	
-	private Set<Color> color;
-	
-	private Set<Size> size;
-	
-	private List<ImageResponse> images;
-	
-	private List<RateResponse> rates = new ArrayList<>();
 	private boolean status;
 }

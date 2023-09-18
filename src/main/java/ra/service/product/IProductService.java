@@ -3,9 +3,13 @@ package ra.service.product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
-import ra.exception.*;
+import ra.exception.CategoryException;
+import ra.exception.ImageProductException;
+import ra.exception.ProductException;
+import ra.model.dto.request.ProductDetailRequest;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
+import ra.model.dto.response.ProductDetailResponse;
 import ra.model.dto.response.ProductResponse;
 
 import java.util.Optional;
@@ -18,7 +22,7 @@ public interface IProductService {
 	
 	ProductResponse findById(Long id) throws ProductException;
 	
-	ProductResponse save(ProductRequest productRequest);
+	ProductResponse save(ProductRequest productRequest) throws ProductException;
 	
 	ProductResponse update(ProductUpdate productUpdate, Long id);
 	
@@ -28,13 +32,7 @@ public interface IProductService {
 	
 	ProductResponse deleteImageInProduct(Long idImage, Long idProduct) throws ImageProductException, ProductException;
 	
-	ProductResponse addColorToProduct(Long colorId, Long productId) throws ColorException, ProductException;
-	
-	ProductResponse deleteColorInProduct(Long productId, Long colorId) throws ProductException, ColorException;
-	
-	ProductResponse addSizeToProduct(Long sizeId, Long productId) throws SizeException, ProductException;
-	
-	ProductResponse deleteSizeInProduct(Long productId, Long sizeId) throws ProductException, SizeException;
+	ProductDetailResponse addProductDetailToProduct(ProductDetailRequest productDetailRequest);
 	
 	ProductResponse addCategoryToProduct(Long categoryId, Long productId) throws ProductException, CategoryException;
 	

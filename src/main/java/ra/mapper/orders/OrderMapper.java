@@ -18,7 +18,6 @@ public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderRe
 				  .location(orderRequest.getLocation())
 				  .phone(orderRequest.getPhone())
 				  .total(orderRequest.getTotal())
-				  .users(orderRequest.getUsers())
 				  .coupon(orderRequest.getCoupon())
 				  .status(orderRequest.isStatus())
 				  .build();
@@ -33,7 +32,6 @@ public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderRe
 				  .location(orders.getLocation())
 				  .phone(orders.getPhone())
 				  .total(orders.getTotal())
-				  .users(orders.getUsers())
 				  .coupon(orders.getCoupon())
 				  .status(orders.isStatus())
 				  .build();

@@ -1,6 +1,7 @@
 package ra.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,28 +10,33 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "rates")
+@Table(name = "product_detail")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class Rates {
+public class ProductDetail {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private int rating;
-	
-	private String content;
-	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
-	private Users users;
-	
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id")
+	@JsonIgnore
 	private Product product;
+	
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "color_id")
+	@JsonIgnore
+	private Color color;
+	
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "size_id")
+	@JsonIgnore
+	private Size size;
+	
+	private int stock;
 	
 	private boolean status;
 	

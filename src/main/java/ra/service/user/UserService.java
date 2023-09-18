@@ -172,6 +172,9 @@ public class UserService implements IUserService {
 	public List<ProductResponse> addProductToFavourite(Long productId, Authentication authentication) throws UserException, ProductException {
 		Users users = findUserByAuthentication(authentication);
 		Product product = findProductById(productId);
+		if (users.getFavourites().contains(product)) {
+			throw new UserException("You has product in your favourite");
+		}
 		users.getFavourites().add(product);
 		return userRepository.save(users).getFavourites().stream()
 				  .map(item -> productMapper.toResponse(item))
@@ -188,47 +191,48 @@ public class UserService implements IUserService {
 				  .collect(Collectors.toList());
 	}
 	
-	@Override
-	public ProductResponse rateProductByUser(RateRequest rateRequest, Long productId, Authentication authentication) throws ProductException, UserException {
-		Product product = findProductById(productId);
-		Users users = findUserByAuthentication(authentication);
-		Rates rate = Rates.builder()
-				  .rating(rateRequest.getRating())
-				  .content(rateRequest.getContent())
-				  .product(product)
-				  .users(users)
-				  .status(true)
-				  .build();
-		product.getRates().add(rate);
-		users.getRates().add(rate);
-		userRepository.save(users);
-		return productMapper.toResponse(productRepository.save(product));
-	}
-	
-	@Override
-	public ProductResponse updateRateInProduct(RateRequest rateRequest, Long rateId, Long productId, Authentication authentication) throws RateException, ProductException, UserException {
-		Users users = findUserByAuthentication(authentication);
-		Product product = findProductById(productId);
-		Rates rate = rateMapper.toEntity(rateRequest);
-		rate.setId(rateId);
-		rateRepository.save(rate);
-		product.getRates().set(product.getRates().indexOf(findRateById(rateId)), rate);
-		users.getRates().set(users.getRates().indexOf(findRateById(rateId)), rate);
-		userRepository.save(users);
-		return productMapper.toResponse(productRepository.save(product));
-	}
-	
-	@Override
-	public ProductResponse removeRateInProductByUser(Long rateId, Long productId, Authentication authentication) throws RateException, UserException, ProductException {
-		Users users = findUserByAuthentication(authentication);
-		Rates rates = findRateById(rateId);
-		Product product = findProductById(productId);
-		product.getRates().remove(rates);
-		users.getRates().remove(rates);
-		userRepository.save(users);
-		return productMapper.toResponse(productRepository.save(product));
-		
-	}
+//	@Override
+//	public ProductResponse rateProductByUser(RateRequest rateRequest, Long productId, Authentication authentication) throws ProductException, UserException {
+//		Product product = findProductById(productId);
+//		Users users = findUserByAuthentication(authentication);
+//		Rates rate = Rates.builder()
+//				  .rating(rateRequest.getRating())
+//				  .content(rateRequest.getContent())
+//				  .product(product)
+//				  .users(users)
+//				  .status(true)
+//				  .build();
+//		product.getRates().add(rate);
+//		users.getRates().add(rate);
+//		userRepository.save(users);
+//		return productMapper.toResponse(productRepository.save(product));
+//	}
+//
+//	@Override
+//	public ProductResponse updateRateInProduct(RateRequest rateRequest, Long rateId, Long productId, Authentication authentication) throws RateException, ProductException, UserException {
+//		Users users = findUserByAuthentication(authentication);
+//		Product product = findProductById(productId);
+//		Rates rate = rateMapper.toEntity(rateRequest);
+//		rate.setId(rateId);
+//		rateRepository.save(rate);
+//		product.getRates().set(product.getRates().indexOf(findRateById(rateId)), rate);
+//		users.getRates().set(users.getRates().indexOf(findRateById(rateId)), rate);
+//		userRepository.save(users);
+//		return productMapper.toResponse(productRepository.save(product));
+//	}
+//
+//	@Override
+//	public ProductResponse removeRateInProductByUser(Long rateId, Long productId, Authentication authentication) throws RateException, UserException, ProductException {
+//		Users users = findUserByAuthentication(authentication);
+//		Rates rates = findRateById(rateId);
+//		Product product = findProductById(productId);
+//		product.getRates().remove(rates);
+//		users.getRates().remove(rates);
+//		userRepository.save(users);
+//		rateRepository.deleteById(rateId);
+//		return productMapper.toResponse(productRepository.save(product));
+//
+//	}
 	
 	public Rates findRateById(Long rateId) throws RateException {
 		Optional<Rates> optionalRates = rateRepository.findById(rateId);

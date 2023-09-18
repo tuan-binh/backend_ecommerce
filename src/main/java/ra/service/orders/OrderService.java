@@ -4,21 +4,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import ra.exception.OrderException;
 import ra.exception.ProductException;
 import ra.exception.UserException;
 import ra.mapper.orders.OrderMapper;
-import ra.model.domain.EDelivered;
-import ra.model.domain.Orders;
-import ra.model.domain.Product;
-import ra.model.domain.Users;
+import ra.model.domain.*;
 import ra.model.dto.request.OrderRequest;
 import ra.model.dto.response.OrderResponse;
 import ra.repository.IOrderRepository;
 import ra.repository.IProductRepository;
 import ra.repository.IUserRepository;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -104,6 +104,43 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
+	public List<OrderResponse> getOrders(Authentication authentication) throws UserException {
+		Users users = findUserByAuthentication(authentication);
+		return users.getOrders().stream().map(item -> orderMapper.toResponse(item)).collect(Collectors.toList());
+	}
+	
+	@Override
+	public OrderResponse addProductToOrder(Long productId, Authentication authentication) throws ProductException, UserException {
+		Product product = findProductById(productId);
+		Users users = findUserByAuthentication(authentication);
+		if (users.getAddress() == null || users.getPhone() == null) {
+			throw new UserException("you must be update your info");
+		}
+		Orders order = findOrderPending(users);
+		if (order == null) {
+			List<CartItem> list = new ArrayList<>();
+			list.add(CartItem.builder()
+					  .product(product)
+					  .price(product.getPrice())
+					  .quantity(1)
+					  .status(true)
+					  .build());
+			Orders newOrder = Orders.builder()
+					  .eDelivered(EDelivered.PENDING)
+					  .deliveryTime(new Date())
+					  .location(users.getAddress())
+					  .phone(users.getPhone())
+					  .total(product.getPrice())
+					  .list(list)
+					  .status(false)
+					  .build();
+			return orderMapper.toResponse(orderRepository.save(newOrder));
+		}
+		
+		return null;
+	}
+	
+	@Override
 	public OrderResponse buyProductInCartUser(Long productId, Long userId) throws ProductException, UserException {
 		Users users = findUserById(userId);
 		Product product = findProductById(productId);
@@ -173,6 +210,28 @@ public class OrderService implements IOrderService {
 			default:
 				throw new OrderException("delivery not found");
 		}
+	}
+	
+	public Orders findOrderPending(Users users) {
+		for (Orders o : users.getOrders()) {
+			if (o.getEDelivered().equals(EDelivered.PENDING)) {
+				return o;
+			}
+		}
+		return null;
+	}
+	
+	public Users findUserByAuthentication(Authentication authentication) throws UserException {
+		if (authentication != null && authentication.isAuthenticated()) {
+			String username = authentication.getName();
+			return findUserByEmail(username);
+		}
+		throw new UserException("Un Authentication");
+	}
+	
+	public Users findUserByEmail(String email) throws UserException {
+		Optional<Users> optionalUsers = userRepository.findByEmail(email);
+		return optionalUsers.orElseThrow(() -> new UserException("user not found"));
 	}
 	
 }

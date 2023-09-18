@@ -23,8 +23,5 @@ public class UserResponse {
 	private String phone;
 	private String address;
 	private Set<String> roles = new HashSet<>();
-	private List<Product> favourites = new ArrayList<>();
-	private List<Rates> rates = new ArrayList<>();
-	private List<Orders> orders = new ArrayList<>();
 	private boolean status;
 }

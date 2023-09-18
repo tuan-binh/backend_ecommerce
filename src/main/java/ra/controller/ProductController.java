@@ -8,9 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ra.exception.*;
+import ra.exception.CategoryException;
+import ra.exception.ImageProductException;
+import ra.exception.ProductException;
+import ra.model.dto.request.ProductDetailRequest;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
+import ra.model.dto.response.ProductDetailResponse;
 import ra.model.dto.response.ProductResponse;
 import ra.service.product.IProductService;
 
@@ -38,7 +42,7 @@ public class ProductController {
 	}
 	
 	@PostMapping("/add")
-	public ResponseEntity<ProductResponse> handleAddProduct(@ModelAttribute ProductRequest productRequest) {
+	public ResponseEntity<ProductResponse> handleAddProduct(@ModelAttribute ProductRequest productRequest) throws ProductException {
 		return new ResponseEntity<>(productService.save(productRequest), HttpStatus.CREATED);
 	}
 	
@@ -61,26 +65,32 @@ public class ProductController {
 	public ResponseEntity<ProductResponse> handleDeleteImageInProduct(@PathVariable Long idImage, @PathVariable Long idProduct) throws ImageProductException, ProductException {
 		return new ResponseEntity<>(productService.deleteImageInProduct(idImage, idProduct), HttpStatus.OK);
 	}
+
+//	@PostMapping("/add_color/{colorId}/to/{productId}")
+//	public ResponseEntity<ProductResponse> handleAddColorToProduct(@PathVariable Long colorId, @PathVariable Long productId) throws ColorException, ProductException {
+//		return new ResponseEntity<>(productService.addColorToProduct(colorId, productId), HttpStatus.CREATED);
+//	}
+//
+//	@DeleteMapping("/delete_color/{productId}/color/{colorId}")
+//	public ResponseEntity<ProductResponse> handleDeleteColor(@PathVariable Long productId, @PathVariable Long colorId) throws ColorException, ProductException {
+//		return new ResponseEntity<>(productService.deleteColorInProduct(productId, colorId), HttpStatus.OK);
+//	}
+//
+//	@PostMapping("/add_size/{sizeId}/to/{productId}")
+//	public ResponseEntity<ProductResponse> handleAddSizeToProduct(@PathVariable Long sizeId, @PathVariable Long productId) throws SizeException, ProductException {
+//		return new ResponseEntity<>(productService.addSizeToProduct(sizeId, productId), HttpStatus.CREATED);
+//	}
+//
+//
+//	@DeleteMapping("/delete_size/{productId}/size/{sizeId}")
+//	public ResponseEntity<ProductResponse> handleDeleteSize(@PathVariable Long productId, @PathVariable Long sizeId) throws ProductException, SizeException {
+//		return new ResponseEntity<>(productService.deleteSizeInProduct(productId, sizeId), HttpStatus.OK);
+//	}
+//
 	
-	@PostMapping("/add_color/{colorId}/to/{productId}")
-	public ResponseEntity<ProductResponse> handleAddColorToProduct(@PathVariable Long colorId, @PathVariable Long productId) throws ColorException, ProductException {
-		return new ResponseEntity<>(productService.addColorToProduct(colorId, productId), HttpStatus.CREATED);
-	}
-	
-	@DeleteMapping("/delete_color/{productId}/color/{colorId}")
-	public ResponseEntity<ProductResponse> handleDeleteColor(@PathVariable Long productId, @PathVariable Long colorId) throws ColorException, ProductException {
-		return new ResponseEntity<>(productService.deleteColorInProduct(productId, colorId), HttpStatus.OK);
-	}
-	
-	@PostMapping("/add_size/{sizeId}/to/{productId}")
-	public ResponseEntity<ProductResponse> handleAddSizeToProduct(@PathVariable Long sizeId, @PathVariable Long productId) throws SizeException, ProductException {
-		return new ResponseEntity<>(productService.addSizeToProduct(sizeId, productId), HttpStatus.CREATED);
-	}
-	
-	
-	@DeleteMapping("/delete_size/{productId}/size/{sizeId}")
-	public ResponseEntity<ProductResponse> handleDeleteSize(@PathVariable Long productId, @PathVariable Long sizeId) throws ProductException, SizeException {
-		return new ResponseEntity<>(productService.deleteSizeInProduct(productId, sizeId), HttpStatus.OK);
+	@PostMapping("/add_product_detail")
+	public ResponseEntity<ProductDetailResponse> handleAddProductDetail(@ModelAttribute ProductDetailRequest productDetailRequest) {
+		return new ResponseEntity<>(productService.addProductDetailToProduct(productDetailRequest), HttpStatus.CREATED);
 	}
 	
 	@PostMapping("/add_category/{categoryId}/to/{productId}")

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -32,8 +33,6 @@ public class Product {
 	
 	private double price;
 	
-	private int stock;
-	
 	@Column(name = "view_count")
 	private int viewCount;
 	
@@ -41,28 +40,15 @@ public class Product {
 	@JoinColumn(name = "category_id")
 	private Category category;
 	
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinTable(
-			  name = "color_detail",
-			  joinColumns = @JoinColumn(name = "product_id"),
-			  inverseJoinColumns = @JoinColumn(name = "color_id")
-	)
-	private Set<Color> color;
-	
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinTable(
-			  name = "size_detail",
-			  joinColumns = @JoinColumn(name = "product_id"),
-			  inverseJoinColumns = @JoinColumn(name = "size_id")
-	)
-	private Set<Size> size;
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
+	private Set<ProductDetail> productDetails = new HashSet<>();
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	private List<ImageProduct> images = new ArrayList<>();
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	private List<CartItem> cartItems = new ArrayList<>();
-
+	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	private List<Rates> rates = new ArrayList<>();
 	

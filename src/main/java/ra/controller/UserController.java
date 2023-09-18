@@ -60,19 +60,6 @@ public class UserController {
 		return new ResponseEntity<>(userService.removeProductInFavourite(productId, authentication), HttpStatus.OK);
 	}
 	
-	@PostMapping("/add_rate/{productId}")
-	public ResponseEntity<ProductResponse> handleRateProductByUser(@RequestBody RateRequest rateRequest, @PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
-		return new ResponseEntity<>(userService.rateProductByUser(rateRequest, productId, authentication), HttpStatus.CREATED);
-	}
 	
-	@PutMapping("/update_rate/{rateId}/in/{productId}")
-	public ResponseEntity<ProductResponse> handleUpdateRateInProduct(@RequestBody RateRequest rateRequest, @PathVariable Long rateId, @PathVariable Long productId, Authentication authentication) throws RateException, UserException, ProductException {
-		return new ResponseEntity<>(userService.updateRateInProduct(rateRequest, rateId, productId, authentication), HttpStatus.OK);
-	}
-	
-	@DeleteMapping("/rate/{rateId}/in/{productId}")
-	public ResponseEntity<ProductResponse> handleRemoveRateByUser(@PathVariable Long rateId, @PathVariable Long productId, Authentication authentication) throws RateException, UserException, ProductException {
-		return new ResponseEntity<>(userService.removeRateInProductByUser(rateId, productId, authentication), HttpStatus.OK);
-	}
 	
 }
