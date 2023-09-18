@@ -1,5 +1,6 @@
 package ra.model.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class Size {
 	private String sizeName;
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "size")
+	@JsonIgnore
 	Set<ProductDetail> productDetails = new HashSet<>();
 	
 	private boolean status;

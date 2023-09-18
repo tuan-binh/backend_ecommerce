@@ -61,9 +61,11 @@ public class Users {
 	private List<Product> favourites = new ArrayList<>();
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "users")
+	@JsonIgnore
 	private List<Rates> rates = new ArrayList<>();
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "users")
+	@JsonIgnore
 	private List<Orders> orders = new ArrayList<>();
 	
 	private boolean status;

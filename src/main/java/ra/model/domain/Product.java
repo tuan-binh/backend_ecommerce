@@ -1,5 +1,6 @@
 package ra.model.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,15 +42,19 @@ public class Product {
 	private Category category;
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
+	@JsonIgnore
 	private Set<ProductDetail> productDetails = new HashSet<>();
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
+	@JsonIgnore
 	private List<ImageProduct> images = new ArrayList<>();
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
+	@JsonIgnore
 	private List<CartItem> cartItems = new ArrayList<>();
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
+	@JsonIgnore
 	private List<Rates> rates = new ArrayList<>();
 	
 	private boolean status;
