@@ -65,7 +65,7 @@ public class ProductController {
 	}
 	
 	@PostMapping("/add_product_detail")
-	public ResponseEntity<ProductDetailResponse> handleAddProductDetail(@ModelAttribute ProductDetailRequest productDetailRequest) throws ColorException, ProductException, SizeException {
+	public ResponseEntity<ProductDetailResponse> handleAddProductDetail(@RequestBody ProductDetailRequest productDetailRequest) throws ColorException, ProductException, SizeException {
 		return new ResponseEntity<>(productService.addProductDetailToProduct(productDetailRequest), HttpStatus.CREATED);
 	}
 	

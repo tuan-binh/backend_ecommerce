@@ -37,6 +37,7 @@ public class ProductDetailMapper implements IGenericMapper<ProductDetail, Produc
 				  .product(findProductById(productDetailRequest.getProductId()))
 				  .color(findColorById(productDetailRequest.getColorId()))
 				  .size(findSizeById(productDetailRequest.getSizeId()))
+				  .stock(productDetailRequest.getStock())
 				  .status(productDetailRequest.isStatus())
 				  .build();
 	}
@@ -48,6 +49,7 @@ public class ProductDetailMapper implements IGenericMapper<ProductDetail, Produc
 				  .product(productDetail.getProduct())
 				  .color(productDetail.getColor())
 				  .size(productDetail.getSize())
+				  .stock(productDetail.getStock())
 				  .status(productDetail.isStatus())
 				  .build();
 	}
