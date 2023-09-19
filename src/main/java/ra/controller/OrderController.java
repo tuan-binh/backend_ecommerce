@@ -62,7 +62,7 @@ public class OrderController {
 	}
 	
 	@PostMapping("/check_out")
-	public ResponseEntity<OrderResponse> checkoutYourCart(Authentication authentication) throws UserException {
+	public ResponseEntity<OrderResponse> checkoutYourCart(Authentication authentication) throws UserException, OrderException {
 		return new ResponseEntity<>(orderService.checkoutYourCart(authentication), HttpStatus.OK);
 	}
 	

@@ -31,7 +31,7 @@ public interface IOrderService {
 	
 	CartItemResponse plusOrderDetail(Long orderDetailId, Authentication authentication) throws OrderException, CartItemException, UserException;
 	
-	CartItemResponse minusOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, OrderException, CartItemException;
+	CartItemResponse minusOrderDetail(Long orderDetailId, Authentication authentication) throws  OrderException, CartItemException;
 	
 	CartItemResponse removeOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, CartItemException, OrderException;
 	
@@ -39,7 +39,7 @@ public interface IOrderService {
 	
 	OrderResponse addCouponToOrder(Long couponId, Authentication authentication) throws CouponException, UserException, OrderException;
 	
-	OrderResponse checkoutYourCart(Authentication authentication) throws UserException;
+	OrderResponse checkoutYourCart(Authentication authentication) throws UserException, OrderException;
 	
 	OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException;
 	

@@ -14,7 +14,9 @@ import ra.model.dto.request.OrderRequest;
 import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
 import ra.repository.*;
+import ra.security.user_principle.UserPrinciple;
 
+import javax.swing.text.html.Option;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -108,23 +110,26 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public List<OrderResponse> getOrders(Authentication authentication) throws UserException {
-		Users users = findUserByAuthentication(authentication);
-		return users.getOrders().stream().filter(Orders::isStatus).map(item -> orderMapper.toResponse(item)).collect(Collectors.toList());
+	public List<OrderResponse> getOrders(Authentication authentication) {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		List<Orders> list = orderRepository.findAllByUsersIdAndStatus(userPrinciple.getId(), true);
+		return list.stream().filter(Orders::isStatus)
+				  .map(item -> orderMapper.toResponse(item))
+				  .collect(Collectors.toList());
 	}
 	
 	@Override
-	public List<CartItemResponse> getCarts(Authentication authentication) throws UserException, OrderException {
-		Users users = findUserByAuthentication(authentication);
-		Orders orders = findCartUser(users);
-		if (orders != null) {
-			return orders.getList().stream().map(item -> cartItemMapper.toResponse(item)).collect(Collectors.toList());
+	public List<CartItemResponse> getCarts(Authentication authentication) throws OrderException {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
+		if (orders.isPresent()) {
+			return orders.get().getList().stream().map(item -> cartItemMapper.toResponse(item)).collect(Collectors.toList());
 		}
 		throw new OrderException("your cart is empty");
 	}
 	
 	@Override
-	public CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws ProductException, UserException, ProductDetailException, CartItemException {
+	public CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws  UserException, ProductDetailException, CartItemException {
 		ProductDetail productDetail = findProductDetailId(productDetailId);
 		Users users = findUserByAuthentication(authentication);
 		Orders order = findCartUser(users);
@@ -151,7 +156,6 @@ public class OrderService implements IOrderService {
 				// đã có sp trong giỏ hàng
 				CartItem cartItem = cartItemOptional.get();
 				cartItem.setQuantity(cartItem.getQuantity() + 1);
-				
 				return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
 			} else {
 				// chưa có sản phẩm trong giỏ hàng
@@ -162,84 +166,98 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public CartItemResponse plusOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, OrderException, CartItemException {
-		Users users = findUserByAuthentication(authentication);
-		Orders orders = findCartUser(users);
-		if (orders != null) {
-			CartItem cartItem = findCartItemById(orderDetailId);
-			if (cartItem.getQuantity() == cartItem.getProductDetail().getStock()) {
-				throw new CartItemException("i don't have this product detail");
+	public CartItemResponse plusOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, CartItemException {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
+		if (orders.isPresent()) {
+			Optional<CartItem> cartItem = cartItemRepository.findByOrders(orders.get());
+			if (cartItem.isPresent()) {
+				if (cartItem.get().getQuantity() == cartItem.get().getProductDetail().getStock()) {
+					throw new CartItemException("i don't have this product detail");
+				}
+				cartItem.get().setQuantity(cartItem.get().getQuantity() + 1);
+				return cartItemMapper.toResponse(cartItemRepository.save(cartItem.get()));
 			}
-			cartItem.setQuantity(cartItem.getQuantity() + 1);
-			return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
+			throw new CartItemException("you don't have this cart item");
 		}
 		throw new UserException("you don't have this order");
 	}
 	
 	@Override
-	public CartItemResponse minusOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, OrderException, CartItemException {
-		Users users = findUserByAuthentication(authentication);
-		Orders orders = findCartUser(users);
-		if (orders != null) {
-			CartItem cartItem = findCartItemById(orderDetailId);
-			if (cartItem.getQuantity() == 1) {
-				cartItemRepository.delete(cartItem);
-				cartItem.setQuantity(0);
-				return cartItemMapper.toResponse(cartItem);
-			} else {
-				cartItem.setQuantity(cartItem.getQuantity() - 1);
-				return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
+	public CartItemResponse minusOrderDetail(Long orderDetailId, Authentication authentication) throws OrderException, CartItemException {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
+		if (orders.isPresent()) {
+			Optional<CartItem> cartItem = cartItemRepository.findByOrders(orders.get());
+			if (cartItem.isPresent()) {
+				if (cartItem.get().getQuantity() == 1) {
+					cartItemRepository.delete(cartItem.get());
+					cartItem.get().setQuantity(0);
+					return cartItemMapper.toResponse(cartItem.get());
+				} else {
+					cartItem.get().setQuantity(cartItem.get().getQuantity() - 1);
+					return cartItemMapper.toResponse(cartItemRepository.save(cartItem.get()));
+				}
 			}
+			throw new CartItemException("you don't have this cart item");
 		}
 		throw new OrderException("you don't have this order");
 	}
 	
 	@Override
-	public CartItemResponse removeOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, CartItemException, OrderException {
-		Users users = findUserByAuthentication(authentication);
-		Orders orders = findCartUser(users);
-		if (orders != null) {
-			CartItem cartItem = findCartItemById(orderDetailId);
-			cartItemRepository.deleteById(orderDetailId);
-			cartItem.setQuantity(0);
-			return cartItemMapper.toResponse(cartItem);
+	public CartItemResponse removeOrderDetail(Long orderDetailId, Authentication authentication) throws  CartItemException, OrderException {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
+		if (orders.isPresent()) {
+			Optional<CartItem> cartItem = cartItemRepository.findByOrders(orders.get());
+			if (cartItem.isPresent()) {
+				cartItemRepository.deleteById(orderDetailId);
+				cartItem.get().setQuantity(0);
+				return cartItemMapper.toResponse(cartItem.get());
+			}
+			throw new CartItemException("you don't have this cart item");
 		}
 		throw new OrderException("you don't have this order");
 	}
 	
 	@Override
-	public List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws UserException, OrderException {
-		Users users = findUserByAuthentication(authentication);
-		Orders orders = findCartUser(users);
-		if (orders != null) {
-			cartItemRepository.resetCartItemByOrderId(orders);
-			return orders.getList().stream().map(item -> cartItemMapper.toResponse(item)).collect(Collectors.toList());
+	public List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws  OrderException {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
+		if (orders.isPresent()) {
+			cartItemRepository.resetCartItemByOrderId(orders.get());
+			return orders.get().getList().stream()
+					  .map(item -> cartItemMapper.toResponse(item))
+					  .collect(Collectors.toList());
 		}
 		throw new OrderException("You cart is empty");
 	}
 	
 	@Override
-	public OrderResponse checkoutYourCart(Authentication authentication) throws UserException {
-		Users users = findUserByAuthentication(authentication);
-		Orders orders = findCartUser(users);
-		if (users.getAddress() == null || users.getPhone() == null) {
+	public OrderResponse checkoutYourCart(Authentication authentication) throws UserException, OrderException {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
+		if (userPrinciple.getAddress() == null || userPrinciple.getPhone() == null) {
 			throw new UserException("you must be update your info");
 		}
-		for (CartItem c : orders.getList()) {
-			c.setPrice(c.getProductDetail().getProduct().getPrice());
+		if (orders.isPresent()) {
+			for (CartItem c : orders.get().getList()) {
+				c.setPrice(c.getProductDetail().getProduct().getPrice());
+			}
+			orders.get().setLocation(userPrinciple.getAddress());
+			orders.get().setPhone(userPrinciple.getPhone());
+			orders.get().setDeliveryTime(new Date());
+			orders.get().setTotal(orders.get().getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
+			if (orders.get().getCoupon() != null) {
+				orders.get().setTotal(orders.get().getTotal() - (orders.get().getTotal() * orders.get().getCoupon().getPercent()));
+			}
+			orders.get().setStatus(true);
+			orders.get().setEDelivered(EDelivered.PREPARE);
+			// thực hiện trừ stock ở trong product detail
+			minusStockInProduct(orders.get().getList());
+			return orderMapper.toResponse(orderRepository.save(orders.get()));
 		}
-		orders.setLocation(users.getAddress());
-		orders.setPhone(users.getPhone());
-		orders.setDeliveryTime(new Date());
-		orders.setTotal(orders.getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
-		if (orders.getCoupon() != null) {
-			orders.setTotal(orders.getTotal() - (orders.getTotal() * orders.getCoupon().getPercent()));
-		}
-		orders.setStatus(true);
-		orders.setEDelivered(EDelivered.PREPARE);
-		// thực hiện trừ stock ở trong product detail
-		minusStockInProduct(orders.getList());
-		return orderMapper.toResponse(orderRepository.save(orders));
+		throw new OrderException("your cart is empty");
 	}
 	
 	@Override

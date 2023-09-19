@@ -16,9 +16,12 @@ import java.util.Optional;
 public interface ICartItemRepository extends JpaRepository<CartItem, Long> {
 	
 	Optional<CartItem> findCartItemByOrdersAndProductDetail(Orders orders, ProductDetail productDetail);
+	
 	@Transactional
 	@Modifying
 	@Query("delete from CartItem as c where c.orders.id = :#{#order.id} ")
 	void resetCartItemByOrderId(@Param("order") Orders orders);
+	
+	Optional<CartItem> findByOrders(Orders orders);
 	
 }

@@ -29,7 +29,7 @@ public class FavouriteService implements IFavouriteService {
 	@Override
 	public List<ProductResponse> getFavourite(Authentication authentication) throws UserException {
 		Users users = findUserByAuthentication(authentication);
-		return userRepository.save(users).getFavourites().stream()
+		return users.getFavourites().stream()
 				  .map(item -> productMapper.toResponse(item))
 				  .collect(Collectors.toList());
 	}
