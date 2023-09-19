@@ -237,7 +237,27 @@ public class OrderService implements IOrderService {
 		}
 		orders.setStatus(true);
 		orders.setEDelivered(EDelivered.PREPARE);
+		// thực hiện trừ stock ở trong product detail
+		minusStockInProduct(orders.getList());
 		return orderMapper.toResponse(orderRepository.save(orders));
+	}
+	
+	@Override
+	public OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException {
+		Users users = findUserByAuthentication(authentication);
+		Orders orders = findOrderById(orderId);
+		if (users.getOrders().contains(orders)) {
+			orders.setDeliveryTime(new Date());
+			return changeDelivery("cancel", orderId);
+		}
+		throw new UserException("Un permission");
+	}
+	
+	public void minusStockInProduct(List<CartItem> cartItems) {
+		for (CartItem c : cartItems) {
+			c.getProductDetail().setStock(c.getProductDetail().getStock() - c.getQuantity());
+			productDetailRepository.save(c.getProductDetail());
+		}
 	}
 	
 	@Override

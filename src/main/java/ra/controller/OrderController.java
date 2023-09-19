@@ -66,6 +66,11 @@ public class OrderController {
 		return new ResponseEntity<>(orderService.checkoutYourCart(authentication), HttpStatus.OK);
 	}
 	
+	@GetMapping("/cancel_order/{orderId}")
+	public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Long orderId, Authentication authentication) throws UserException, OrderException {
+		return new ResponseEntity<>(orderService.cancelOrder(orderId, authentication), HttpStatus.OK);
+	}
+	
 	@PutMapping("/change_delivery/{orderId}")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<OrderResponse> changeDeliveryOrder(@RequestParam("typeDelivery") String typeDelivery, @PathVariable Long orderId) throws OrderException {

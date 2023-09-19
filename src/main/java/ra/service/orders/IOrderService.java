@@ -41,6 +41,8 @@ public interface IOrderService {
 	
 	OrderResponse checkoutYourCart(Authentication authentication) throws UserException;
 	
+	OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException;
+	
 	OrderResponse changeDelivery(String typeDelivery, Long orderId) throws OrderException;
 	
 }
