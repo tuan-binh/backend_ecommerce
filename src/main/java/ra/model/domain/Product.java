@@ -1,10 +1,7 @@
 package ra.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -16,8 +13,9 @@ import java.util.Set;
 @Table(name = "products")
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
+@Setter
+@Getter
 public class Product {
 	
 	@Id

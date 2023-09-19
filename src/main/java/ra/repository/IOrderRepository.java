@@ -12,4 +12,6 @@ public interface IOrderRepository extends JpaRepository<Orders, Long> {
 	
 	Orders findOrdersByUsersIdAndStatus(Long id, boolean status);
 	
+	
+	
 }

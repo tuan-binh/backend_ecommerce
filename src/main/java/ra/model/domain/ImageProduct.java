@@ -1,10 +1,7 @@
 package ra.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -12,8 +9,9 @@ import javax.persistence.*;
 @Table(name = "image_product")
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
+@Setter
+@Getter
 public class ImageProduct {
 	
 	@Id

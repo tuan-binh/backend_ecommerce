@@ -25,16 +25,20 @@ public interface IOrderService {
 	
 	List<OrderResponse> getOrders(Authentication authentication) throws UserException;
 	
+	List<CartItemResponse> getCarts(Authentication authentication) throws UserException, OrderException;
+	
 	CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws ProductException, UserException, ProductDetailException, CartItemException;
 	
 	CartItemResponse plusOrderDetail(Long orderDetailId, Authentication authentication) throws OrderException, CartItemException, UserException;
 	
 	CartItemResponse minusOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, OrderException, CartItemException;
 	
+	CartItemResponse removeOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, CartItemException, OrderException;
+	
+	List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws UserException, OrderException;
+	
+	OrderResponse checkoutYourCart(Authentication authentication);
+	
 	OrderResponse changeDelivery(String typeDelivery, Long id) throws OrderException;
-	
-	OrderResponse buyProductInCartUser(Long productId, Long userId) throws ProductException, UserException;
-	
-	OrderResponse addProductToOrderUser(Long productId, Long orderId);
 	
 }

@@ -20,9 +20,14 @@ public class OrderController {
 	@Autowired
 	private IOrderService orderService;
 	
-	@GetMapping("/get_all")
+	@GetMapping("/get_order")
 	public ResponseEntity<List<OrderResponse>> getOrders(Authentication authentication) throws UserException {
 		return new ResponseEntity<>(orderService.getOrders(authentication), HttpStatus.OK);
+	}
+	
+	@GetMapping("/get_cart")
+	public ResponseEntity<List<CartItemResponse>> getCarts(Authentication authentication) throws UserException, OrderException {
+		return new ResponseEntity<>(orderService.getCarts(authentication), HttpStatus.OK);
 	}
 	
 	@GetMapping("/buy/{productDetailId}")
@@ -38,6 +43,21 @@ public class OrderController {
 	@GetMapping("/minus/{orderDetailId}")
 	public ResponseEntity<CartItemResponse> minusOrderDetail(@PathVariable Long orderDetailId, Authentication authentication) throws CartItemException, UserException, OrderException {
 		return new ResponseEntity<>(orderService.minusOrderDetail(orderDetailId, authentication), HttpStatus.OK);
+	}
+	
+	@DeleteMapping("/remove/{orderDetailId}")
+	public ResponseEntity<CartItemResponse> removeOrderDetail(@PathVariable Long orderDetailId, Authentication authentication) throws CartItemException, UserException, OrderException {
+		return new ResponseEntity<>(orderService.removeOrderDetail(orderDetailId, authentication), HttpStatus.OK);
+	}
+	
+	@DeleteMapping("/remove_all")
+	public ResponseEntity<List<CartItemResponse>> removeAllYourCart(Authentication authentication) throws UserException, OrderException {
+		return new ResponseEntity<>(orderService.removeAllInYourCart(authentication), HttpStatus.OK);
+	}
+	
+	@PostMapping("/check_out")
+	public ResponseEntity<OrderResponse> checkoutYourCart(Authentication authentication) {
+		return new ResponseEntity<>(orderService.checkoutYourCart(authentication), HttpStatus.OK);
 	}
 	
 }

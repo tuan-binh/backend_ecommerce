@@ -17,7 +17,6 @@ import ra.repository.*;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -110,17 +109,26 @@ public class OrderService implements IOrderService {
 	@Override
 	public List<OrderResponse> getOrders(Authentication authentication) throws UserException {
 		Users users = findUserByAuthentication(authentication);
-		return users.getOrders().stream().map(item -> orderMapper.toResponse(item)).collect(Collectors.toList());
+		return users.getOrders().stream().filter(Orders::isStatus).map(item -> orderMapper.toResponse(item)).collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<CartItemResponse> getCarts(Authentication authentication) throws UserException, OrderException {
+		Users users = findUserByAuthentication(authentication);
+		Orders orders = findCartUser(users);
+		if (orders != null) {
+			return orders.getList().stream().map(item -> cartItemMapper.toResponse(item)).collect(Collectors.toList());
+		}
+		throw new OrderException("your cart is empty");
 	}
 	
 	@Override
 	public CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws ProductException, UserException, ProductDetailException, CartItemException {
 		ProductDetail productDetail = findProductDetailId(productDetailId);
-		Product product = productDetail.getProduct();
 		Users users = findUserByAuthentication(authentication);
-		if (users.getAddress() == null || users.getPhone() == null) {
-			throw new UserException("you must be update your info");
-		}
+//		if (users.getAddress() == null || users.getPhone() == null) {
+//			throw new UserException("you must be update your info");
+//		}
 		Orders order = findCartUser(users);
 		if (order == null) {
 			Orders orders = Orders.builder()
@@ -128,7 +136,6 @@ public class OrderService implements IOrderService {
 					  .deliveryTime(new Date())
 					  .location(users.getAddress())
 					  .phone(users.getPhone())
-					  .total(product.getPrice())
 					  .users(users)
 					  .status(false)
 					  .build();
@@ -136,32 +143,25 @@ public class OrderService implements IOrderService {
 			CartItem cartItem = CartItem.builder()
 					  .productDetail(productDetail)
 					  .orders(newOrder)
-					  .price(product.getPrice())
 					  .quantity(1)
 					  .build();
 			cartItemRepository.save(cartItem);
 			return cartItemMapper.toResponse(cartItem);
-		}
-		CartItem cartItem = checkExistsCartItem(order.getList(), productDetail);
-		if (cartItem != null) {
-			// co ton tai
-			if (cartItem.getQuantity() == cartItem.getProductDetail().getStock()) {
-				throw new CartItemException("i don't have this product detail");
+		} else {
+			// có giỏ hàng
+			Optional<CartItem> cartItemOptional = cartItemRepository.findCartItemByOrdersAndProductDetail(order, productDetail);
+			if (cartItemOptional.isPresent()) {
+				// đã có sp trong giỏ hàng
+				CartItem cartItem = cartItemOptional.get();
+				cartItem.setQuantity(cartItem.getQuantity() + 1);
+				
+				return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
+			} else {
+				// chưa có sản phẩm trong giỏ hàng
+				CartItem cartItem = CartItem.builder().orders(order).productDetail(productDetail).quantity(1).build();
+				return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
 			}
-			cartItem.setQuantity(cartItem.getQuantity() + 1);
-			orderRepository.save(order);
-			return cartItemMapper.toResponse(cartItem);
 		}
-		// khong ton tai
-		CartItem newCartItem = CartItem.builder()
-				  .productDetail(productDetail)
-				  .orders(order)
-				  .price(product.getPrice())
-				  .quantity(1)
-				  .build();
-		order.getList().add(newCartItem);
-		orderRepository.save(order);
-		return cartItemMapper.toResponse(cartItemRepository.save(newCartItem));
 	}
 	
 	@Override
@@ -197,34 +197,34 @@ public class OrderService implements IOrderService {
 		throw new OrderException("you don't have this order");
 	}
 	
-	
 	@Override
-	public OrderResponse buyProductInCartUser(Long productId, Long userId) throws ProductException, UserException {
-		Users users = findUserById(userId);
-		Product product = findProductById(productId);
-
-
-//		List<CartItem> list = new ArrayList<>();
-//		list.add(CartItem.builder().product(product).price(product.getPrice()).quantity(1).status(true).build());
-//		Orders orders = Orders.builder()
-//				  .eDelivered(EDelivered.PENDING)
-//				  .deliveryTime(new Date())
-//				  .location(users.getAddress())
-//				  .phone(users.getPhone())
-//				  .total(product.getPrice())
-//				  .list(list)
-//				  .users(users)
-//				  .status(false)
-//				  .build();
-//		users.getOrders().add(orders);
-//		userRepository.save(users);
-//		return orderMapper.toResponse(orderRepository.save(orders));
-		
-		return null;
+	public CartItemResponse removeOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, CartItemException, OrderException {
+		Users users = findUserByAuthentication(authentication);
+		Orders orders = findCartUser(users);
+		if (orders != null) {
+			CartItem cartItem = findCartItemById(orderDetailId);
+			cartItemRepository.deleteById(orderDetailId);
+			cartItem.setQuantity(0);
+			return cartItemMapper.toResponse(cartItem);
+		}
+		throw new OrderException("you don't have this order");
 	}
 	
 	@Override
-	public OrderResponse addProductToOrderUser(Long productId, Long orderId) {
+	public List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws UserException, OrderException {
+		// đang lỗi
+		Users users = findUserByAuthentication(authentication);
+		Orders orders = findCartUser(users);
+		if (orders != null) {
+//			cartItemRepository.deleteAllByOrders(orders);
+			cartItemRepository.resetCartItemByOrderId(orders);
+			return orders.getList().stream().map(item -> cartItemMapper.toResponse(item)).collect(Collectors.toList());
+		}
+		throw new OrderException("You cart is empty");
+	}
+	
+	@Override
+	public OrderResponse checkoutYourCart(Authentication authentication) {
 		return null;
 	}
 	
@@ -236,38 +236,6 @@ public class OrderService implements IOrderService {
 	public ProductDetail findProductDetailId(Long productDetailId) throws ProductDetailException {
 		Optional<ProductDetail> optionalProductDetail = productDetailRepository.findById(productDetailId);
 		return optionalProductDetail.orElseThrow(() -> new ProductDetailException("product detail not found"));
-	}
-	
-	public CartItem checkExistsCartItem(List<CartItem> cartItems, ProductDetail productDetail) {
-		for (CartItem c : cartItems) {
-			if (Objects.equals(c.getProductDetail().getProduct().getId(), productDetail.getProduct().getId())) {
-				if (Objects.equals(c.getProductDetail().getColor().getId(), productDetail.getColor().getId())) {
-					if (Objects.equals(c.getProductDetail().getSize().getId(), productDetail.getSize().getId())) {
-						return c;
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-//	public Orders findOrderStatusPending(Users users) throws OrderException {
-//		for (Orders u : users.getOrders()) {
-//			if (u.getEDelivered().equals(EDelivered.PENDING)) {
-//				return u;
-//			}
-//		}
-//		throw new OrderException("order not found");
-//	}
-	
-	public Users findUserById(Long userId) throws UserException {
-		Optional<Users> optionalUsers = userRepository.findById(userId);
-		return optionalUsers.orElseThrow(() -> new UserException("user not found"));
-	}
-	
-	public Product findProductById(Long productId) throws ProductException {
-		Optional<Product> optionalProduct = productRepository.findById(productId);
-		return optionalProduct.orElseThrow(() -> new ProductException("product not found"));
 	}
 	
 	
