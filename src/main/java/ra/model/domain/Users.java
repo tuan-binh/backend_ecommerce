@@ -1,10 +1,7 @@
 package ra.model.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -20,8 +17,9 @@ import java.util.Set;
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
+@Setter
+@Getter
 public class Users {
 	
 	@Id
@@ -53,18 +51,18 @@ public class Users {
 	
 	
 	@ManyToMany
-			  @JoinTable(
+	@JoinTable(
 			  name = "favourites",
 			  joinColumns = @JoinColumn(name = "user_id"),
 			  inverseJoinColumns = @JoinColumn(name = "product_id")
 	)
 	private List<Product> favourites = new ArrayList<>();
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "users")
+	@OneToMany( mappedBy = "users")
 	@JsonIgnore
 	private List<Rates> rates = new ArrayList<>();
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "users")
+	@OneToMany( mappedBy = "users")
 	@JsonIgnore
 	private List<Orders> orders = new ArrayList<>();
 	

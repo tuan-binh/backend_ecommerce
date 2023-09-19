@@ -44,15 +44,11 @@ public class Product {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	@JsonIgnore
 	private Set<ProductDetail> productDetails = new HashSet<>();
-	
+
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	@JsonIgnore
 	private List<ImageProduct> images = new ArrayList<>();
-	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
-	@JsonIgnore
-	private List<CartItem> cartItems = new ArrayList<>();
-	
+
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	@JsonIgnore
 	private List<Rates> rates = new ArrayList<>();

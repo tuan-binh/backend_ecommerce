@@ -3,20 +3,15 @@ package ra.service.user;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
-import ra.exception.ProductException;
-import ra.exception.RateException;
 import ra.exception.RoleException;
 import ra.exception.UserException;
-import ra.model.domain.Product;
 import ra.model.domain.Users;
-import ra.model.dto.request.RateRequest;
 import ra.model.dto.request.UserLogin;
 import ra.model.dto.request.UserRegister;
+import ra.model.dto.request.UserUpdate;
 import ra.model.dto.response.JwtResponse;
-import ra.model.dto.response.ProductResponse;
 import ra.model.dto.response.UserResponse;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface IUserService {
@@ -32,5 +27,9 @@ public interface IUserService {
 	JwtResponse login(UserLogin userLogin) throws UserException;
 	
 	UserResponse changeStatus(Long id) throws UserException;
+	
+	UserResponse updateYourInfo(UserUpdate userUpdate, Authentication authentication) throws UserException;
+	
+	UserResponse changePassword(String password, Authentication authentication) throws UserException;
 	
 }

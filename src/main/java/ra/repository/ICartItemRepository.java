@@ -8,4 +8,5 @@ import ra.model.domain.CartItem;
 public interface ICartItemRepository extends JpaRepository<CartItem, Long> {
 
 
+
 }

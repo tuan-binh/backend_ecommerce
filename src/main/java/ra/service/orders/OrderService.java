@@ -6,21 +6,18 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import ra.exception.CouponException;
-import ra.exception.OrderException;
-import ra.exception.ProductException;
-import ra.exception.UserException;
+import ra.exception.*;
+import ra.mapper.cartitem.CartItemMapper;
 import ra.mapper.orders.OrderMapper;
 import ra.model.domain.*;
 import ra.model.dto.request.OrderRequest;
+import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
-import ra.repository.IOrderRepository;
-import ra.repository.IProductRepository;
-import ra.repository.IUserRepository;
+import ra.repository.*;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -30,11 +27,17 @@ public class OrderService implements IOrderService {
 	@Autowired
 	private IOrderRepository orderRepository;
 	@Autowired
+	private ICartItemRepository cartItemRepository;
+	@Autowired
 	private OrderMapper orderMapper;
+	@Autowired
+	private CartItemMapper cartItemMapper;
 	@Autowired
 	private IUserRepository userRepository;
 	@Autowired
 	private IProductRepository productRepository;
+	@Autowired
+	private IProductDetailRepository productDetailRepository;
 	
 	@Override
 	public Page<OrderResponse> findAll(Pageable pageable, Optional<String> phone) {
@@ -111,35 +114,89 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public OrderResponse addProductToOrder(Long productId, Authentication authentication) throws ProductException, UserException {
-		Product product = findProductById(productId);
+	public CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws ProductException, UserException, ProductDetailException, CartItemException {
+		ProductDetail productDetail = findProductDetailId(productDetailId);
+		Product product = productDetail.getProduct();
 		Users users = findUserByAuthentication(authentication);
 		if (users.getAddress() == null || users.getPhone() == null) {
 			throw new UserException("you must be update your info");
 		}
-		Orders order = findOrderPending(users);
+		Orders order = findCartUser(users);
 		if (order == null) {
-			List<CartItem> list = new ArrayList<>();
-			list.add(CartItem.builder()
-					  .product(product)
-					  .price(product.getPrice())
-					  .quantity(1)
-					  .status(true)
-					  .build());
-			Orders newOrder = Orders.builder()
+			Orders orders = Orders.builder()
 					  .eDelivered(EDelivered.PENDING)
 					  .deliveryTime(new Date())
 					  .location(users.getAddress())
 					  .phone(users.getPhone())
 					  .total(product.getPrice())
-					  .list(list)
+					  .users(users)
 					  .status(false)
 					  .build();
-			return orderMapper.toResponse(orderRepository.save(newOrder));
+			Orders newOrder = orderRepository.save(orders);
+			CartItem cartItem = CartItem.builder()
+					  .productDetail(productDetail)
+					  .orders(newOrder)
+					  .price(product.getPrice())
+					  .quantity(1)
+					  .build();
+			cartItemRepository.save(cartItem);
+			return cartItemMapper.toResponse(cartItem);
 		}
-		
-		return null;
+		CartItem cartItem = checkExistsCartItem(order.getList(), productDetail);
+		if (cartItem != null) {
+			// co ton tai
+			if (cartItem.getQuantity() == cartItem.getProductDetail().getStock()) {
+				throw new CartItemException("i don't have this product detail");
+			}
+			cartItem.setQuantity(cartItem.getQuantity() + 1);
+			orderRepository.save(order);
+			return cartItemMapper.toResponse(cartItem);
+		}
+		// khong ton tai
+		CartItem newCartItem = CartItem.builder()
+				  .productDetail(productDetail)
+				  .orders(order)
+				  .price(product.getPrice())
+				  .quantity(1)
+				  .build();
+		order.getList().add(newCartItem);
+		orderRepository.save(order);
+		return cartItemMapper.toResponse(cartItemRepository.save(newCartItem));
 	}
+	
+	@Override
+	public CartItemResponse plusOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, OrderException, CartItemException {
+		Users users = findUserByAuthentication(authentication);
+		Orders orders = findCartUser(users);
+		if (orders != null) {
+			CartItem cartItem = findCartItemById(orderDetailId);
+			if (cartItem.getQuantity() == cartItem.getProductDetail().getStock()) {
+				throw new CartItemException("i don't have this product detail");
+			}
+			cartItem.setQuantity(cartItem.getQuantity() + 1);
+			return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
+		}
+		throw new UserException("you don't have this order");
+	}
+	
+	@Override
+	public CartItemResponse minusOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, OrderException, CartItemException {
+		Users users = findUserByAuthentication(authentication);
+		Orders orders = findCartUser(users);
+		if (orders != null) {
+			CartItem cartItem = findCartItemById(orderDetailId);
+			if (cartItem.getQuantity() == 1) {
+				cartItemRepository.delete(cartItem);
+				cartItem.setQuantity(0);
+				return cartItemMapper.toResponse(cartItem);
+			} else {
+				cartItem.setQuantity(cartItem.getQuantity() - 1);
+				return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
+			}
+		}
+		throw new OrderException("you don't have this order");
+	}
+	
 	
 	@Override
 	public OrderResponse buyProductInCartUser(Long productId, Long userId) throws ProductException, UserException {
@@ -171,14 +228,37 @@ public class OrderService implements IOrderService {
 		return null;
 	}
 	
-	public Orders findOrderStatusPending(Users users) throws OrderException {
-		for (Orders u : users.getOrders()) {
-			if (u.getEDelivered().equals(EDelivered.PENDING)) {
-				return u;
+	public CartItem findCartItemById(Long orderDetailId) throws CartItemException {
+		Optional<CartItem> optionalCartItem = cartItemRepository.findById(orderDetailId);
+		return optionalCartItem.orElseThrow(() -> new CartItemException("cart item not found"));
+	}
+	
+	public ProductDetail findProductDetailId(Long productDetailId) throws ProductDetailException {
+		Optional<ProductDetail> optionalProductDetail = productDetailRepository.findById(productDetailId);
+		return optionalProductDetail.orElseThrow(() -> new ProductDetailException("product detail not found"));
+	}
+	
+	public CartItem checkExistsCartItem(List<CartItem> cartItems, ProductDetail productDetail) {
+		for (CartItem c : cartItems) {
+			if (Objects.equals(c.getProductDetail().getProduct().getId(), productDetail.getProduct().getId())) {
+				if (Objects.equals(c.getProductDetail().getColor().getId(), productDetail.getColor().getId())) {
+					if (Objects.equals(c.getProductDetail().getSize().getId(), productDetail.getSize().getId())) {
+						return c;
+					}
+				}
 			}
 		}
-		throw new OrderException("order not found");
+		return null;
 	}
+
+//	public Orders findOrderStatusPending(Users users) throws OrderException {
+//		for (Orders u : users.getOrders()) {
+//			if (u.getEDelivered().equals(EDelivered.PENDING)) {
+//				return u;
+//			}
+//		}
+//		throw new OrderException("order not found");
+//	}
 	
 	public Users findUserById(Long userId) throws UserException {
 		Optional<Users> optionalUsers = userRepository.findById(userId);
@@ -213,9 +293,9 @@ public class OrderService implements IOrderService {
 		}
 	}
 	
-	public Orders findOrderPending(Users users) {
+	public Orders findCartUser(Users users) {
 		for (Orders o : users.getOrders()) {
-			if (o.getEDelivered().equals(EDelivered.PENDING)) {
+			if (!o.isStatus()) {
 				return o;
 			}
 		}

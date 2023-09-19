@@ -9,10 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class CartItemRequest {
-	private Long productDetailId;
-	private Long orderId;
-	private double price;
-	private int quantity;
-	private boolean status;
+public class UserUpdate {
+	private String phone;
+	private String address;
 }

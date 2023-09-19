@@ -7,12 +7,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ra.exception.*;
+import ra.mapper.image.ImageMapper;
 import ra.mapper.product.ProductMapper;
 import ra.mapper.productDetail.ProductDetailMapper;
 import ra.model.domain.*;
 import ra.model.dto.request.ProductDetailRequest;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
+import ra.model.dto.response.ImageResponse;
 import ra.model.dto.response.ProductDetailResponse;
 import ra.model.dto.response.ProductResponse;
 import ra.repository.*;
@@ -20,6 +22,7 @@ import ra.service.upload_aws.StorageService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,19 +34,13 @@ public class ProductService implements IProductService {
 	@Autowired
 	private IImageProductRepository iImageProductRepository;
 	@Autowired
-	private IColorRepository colorRepository;
-	@Autowired
-	private ISizeRepository sizeRepository;
-	@Autowired
 	private ICategoryRepository categoryRepository;
 	@Autowired
 	private ProductMapper productMapper;
 	@Autowired
+	private ImageMapper imageMapper;
+	@Autowired
 	private StorageService storageService;
-	@Autowired
-	private ProductDetailMapper productDetailMapper;
-	@Autowired
-	private IProductDetailRepository productDetailRepository;
 	
 	@Override
 	public Page<ProductResponse> findAll(Pageable pageable, Optional<String> productName) {
@@ -117,24 +114,23 @@ public class ProductService implements IProductService {
 	}
 	
 	@Override
-	public ProductResponse addImageToProduct(MultipartFile multipartFile, Long id) throws ProductException {
+	public List<ImageResponse> addImageToProduct(MultipartFile multipartFile, Long id) throws ProductException {
 		Product product = findProductById(id);
 		String url = storageService.uploadFile(multipartFile);
 		product.getImages().add(ImageProduct.builder().image(url).product(product).build());
-		return productMapper.toResponse(productRepository.save(product));
+		return productRepository.save(product).getImages().stream()
+				  .map(item -> imageMapper.toResponse(item))
+				  .collect(Collectors.toList());
 	}
 	
 	@Override
-	public ProductResponse deleteImageInProduct(Long idImage, Long idProduct) throws ImageProductException, ProductException {
-		ImageProduct imageProduct = findImageProductById(idImage);
-		Product product = findProductById(idProduct);
-		product.getImages().add(imageProduct);
-		return productMapper.toResponse(productRepository.save(product));
-	}
-	
-	@Override
-	public ProductDetailResponse addProductDetailToProduct(ProductDetailRequest productDetailRequest) throws ColorException, ProductException, SizeException {
-		return productDetailMapper.toResponse(productDetailRepository.save(productDetailMapper.toEntity(productDetailRequest)));
+	public ImageResponse deleteImageInProduct(Long idImage) throws ImageProductException, ProductException {
+		Optional<ImageProduct> optionalImageProduct = iImageProductRepository.findById(idImage);
+		if (optionalImageProduct.isPresent()) {
+			iImageProductRepository.deleteById(idImage);
+			return imageMapper.toResponse(optionalImageProduct.get());
+		}
+		throw new ImageProductException("image not found");
 	}
 	
 	@Override
@@ -157,19 +153,20 @@ public class ProductService implements IProductService {
 		return optionalCategory.orElseThrow(() -> new CategoryException("category not found"));
 	}
 	
-	public Color findColorById(Long colorId) throws ColorException {
-		Optional<Color> optionalColor = colorRepository.findById(colorId);
-		return optionalColor.orElseThrow(() -> new ColorException("color not found"));
-	}
+//	public Color findColorById(Long colorId) throws ColorException {
+//		Optional<Color> optionalColor = colorRepository.findById(colorId);
+//		return optionalColor.orElseThrow(() -> new ColorException("color not found"));
+//	}
+//
+//	public Size findSizeById(Long sizeId) throws SizeException {
+//		Optional<Size> optionalSize = sizeRepository.findById(sizeId);
+//		return optionalSize.orElseThrow(() -> new SizeException("size not found"));
+//	}
+//
+//	public ImageProduct findImageProductById(Long idImage) throws ImageProductException {
+//		Optional<ImageProduct> optionalImageProduct = iImageProductRepository.findById(idImage);
+//		return optionalImageProduct.orElseThrow(() -> new ImageProductException("image not found"));
+//	}
 	
-	public Size findSizeById(Long sizeId) throws SizeException {
-		Optional<Size> optionalSize = sizeRepository.findById(sizeId);
-		return optionalSize.orElseThrow(() -> new SizeException("size not found"));
-	}
-	
-	public ImageProduct findImageProductById(Long idImage) throws ImageProductException {
-		Optional<ImageProduct> optionalImageProduct = iImageProductRepository.findById(idImage);
-		return optionalImageProduct.orElseThrow(() -> new ImageProductException("image not found"));
-	}
-	
+
 }

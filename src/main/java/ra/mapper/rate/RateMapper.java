@@ -9,8 +9,6 @@ import ra.model.domain.Rates;
 import ra.model.dto.request.RateRequest;
 import ra.model.dto.response.RateResponse;
 import ra.repository.IProductRepository;
-import ra.service.product.ProductService;
-import ra.service.user.UserService;
 
 import java.util.Optional;
 
@@ -25,7 +23,6 @@ public class RateMapper implements IGenericMapper<Rates, RateRequest, RateRespon
 		return Rates.builder()
 				  .rating(rateRequest.getRating())
 				  .content(rateRequest.getContent())
-				  .status(rateRequest.isStatus())
 				  .product(findProductById(rateRequest.getProductId()))
 				  .build();
 	}
@@ -34,9 +31,9 @@ public class RateMapper implements IGenericMapper<Rates, RateRequest, RateRespon
 	public RateResponse toResponse(Rates rates) {
 		return RateResponse.builder()
 				  .id(rates.getId())
+				  .user(rates.getUsers().getFullName())
 				  .rating(rates.getRating())
 				  .content(rates.getContent())
-				  .status(rates.isStatus())
 				  .build();
 	}
 	

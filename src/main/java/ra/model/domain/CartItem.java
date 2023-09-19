@@ -19,9 +19,9 @@ public class CartItem {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "product_id")
-	private Product product;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "product_detail_id")
+	private ProductDetail productDetail;
 	
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "order_id")
@@ -31,6 +31,5 @@ public class CartItem {
 	
 	private int quantity;
 	
-	private boolean status;
 	
 }

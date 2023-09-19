@@ -73,7 +73,6 @@ public class RateService implements IRateService {
 	@Override
 	public RateResponse changeStatus(Long id) throws RateException {
 		Rates rates = findRatesById(id);
-		rates.setStatus(!rates.isStatus());
 		return rateMapper.toResponse(rateRepository.save(rates));
 	}
 	
@@ -117,12 +116,12 @@ public class RateService implements IRateService {
 	public Users findUserByAuthentication(Authentication authentication) throws UserException {
 		if (authentication != null && authentication.isAuthenticated()) {
 			String username = authentication.getName();
-			return findUserByEmail(username);
+			return findUserByUserName(username);
 		}
 		throw new UserException("Un Authentication");
 	}
 	
-	public Users findUserByEmail(String email) throws UserException {
+	public Users findUserByUserName(String email) throws UserException {
 		Optional<Users> optionalUsers = userRepository.findByEmail(email);
 		return optionalUsers.orElseThrow(() -> new UserException("user not found"));
 	}

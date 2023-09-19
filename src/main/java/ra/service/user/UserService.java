@@ -13,22 +13,17 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ra.exception.ProductException;
-import ra.exception.RateException;
 import ra.exception.RoleException;
 import ra.exception.UserException;
-import ra.mapper.product.ProductMapper;
-import ra.mapper.rate.RateMapper;
 import ra.mapper.user.UserMapper;
-import ra.model.domain.*;
-import ra.model.dto.request.RateRequest;
+import ra.model.domain.ERole;
+import ra.model.domain.Roles;
+import ra.model.domain.Users;
 import ra.model.dto.request.UserLogin;
 import ra.model.dto.request.UserRegister;
+import ra.model.dto.request.UserUpdate;
 import ra.model.dto.response.JwtResponse;
-import ra.model.dto.response.ProductResponse;
 import ra.model.dto.response.UserResponse;
-import ra.repository.IProductRepository;
-import ra.repository.IRateRepository;
 import ra.repository.IUserRepository;
 import ra.security.jwt.JwtEntryPoint;
 import ra.security.jwt.JwtProvider;
@@ -58,14 +53,6 @@ public class UserService implements IUserService {
 	private AuthenticationManager authenticationManager;
 	@Autowired
 	private JwtProvider jwtProvider;
-	@Autowired
-	private IProductRepository productRepository;
-	@Autowired
-	private IRateRepository rateRepository;
-	@Autowired
-	private ProductMapper productMapper;
-	@Autowired
-	private RateMapper rateMapper;
 	
 	@Override
 	public Page<UserResponse> findAll(Pageable pageable, Optional<String> fullName) {
@@ -169,6 +156,40 @@ public class UserService implements IUserService {
 		Users users = findUserById(id);
 		users.setStatus(!users.isStatus());
 		return userMapper.toResponse(userRepository.save(users));
+	}
+	
+	@Override
+	public UserResponse updateYourInfo(UserUpdate userUpdate, Authentication authentication) throws UserException {
+		if (userUpdate.getPhone().trim().isEmpty() || userUpdate.getAddress().trim().isEmpty()) {
+			throw new UserException("you must be update full your information");
+		}
+		Users users = findUserByAuthentication(authentication);
+		users.setPhone(userUpdate.getPhone());
+		users.setAddress(userUpdate.getAddress());
+		return userMapper.toResponse(userRepository.save(users));
+	}
+	
+	@Override
+	public UserResponse changePassword(String password, Authentication authentication) throws UserException {
+		if (password.trim().isEmpty()) {
+			throw new UserException("you does not blank");
+		}
+		Users users = findUserByAuthentication(authentication);
+		users.setPassword(passwordEncoder.encode(password));
+		return userMapper.toResponse(userRepository.save(users));
+	}
+	
+	public Users findUserByAuthentication(Authentication authentication) throws UserException {
+		if (authentication != null && authentication.isAuthenticated()) {
+			String username = authentication.getName();
+			return findUserByUserName(username);
+		}
+		throw new UserException("Un Authentication");
+	}
+	
+	public Users findUserByUserName(String email) throws UserException {
+		Optional<Users> optionalUsers = userRepository.findByEmail(email);
+		return optionalUsers.orElseThrow(() -> new UserException("user not found"));
 	}
 	
 	public Users findUserById(Long id) throws UserException {

@@ -3,11 +3,9 @@ package ra.service.orders;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
-import ra.exception.CouponException;
-import ra.exception.OrderException;
-import ra.exception.ProductException;
-import ra.exception.UserException;
+import ra.exception.*;
 import ra.model.dto.request.OrderRequest;
+import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
 
 import java.util.List;
@@ -27,7 +25,11 @@ public interface IOrderService {
 	
 	List<OrderResponse> getOrders(Authentication authentication) throws UserException;
 	
-	OrderResponse addProductToOrder(Long productId, Authentication authentication) throws ProductException, UserException;
+	CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws ProductException, UserException, ProductDetailException, CartItemException;
+	
+	CartItemResponse plusOrderDetail(Long orderDetailId, Authentication authentication) throws OrderException, CartItemException, UserException;
+	
+	CartItemResponse minusOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, OrderException, CartItemException;
 	
 	OrderResponse changeDelivery(String typeDelivery, Long id) throws OrderException;
 	

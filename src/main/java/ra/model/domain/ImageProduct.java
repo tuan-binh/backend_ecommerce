@@ -22,7 +22,7 @@ public class ImageProduct {
 	
 	private String image;
 	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id")
 	private Product product;
 	

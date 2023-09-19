@@ -36,6 +36,10 @@ public class FavouriteService implements IFavouriteService {
 	
 	@Override
 	public List<ProductResponse> addProductToFavourite(Long productId, Authentication authentication) throws UserException, ProductException {
+		Product product = findProductById(productId);
+		Users users = findUserByAuthentication(authentication);
+		users.getFavourites().add(product);
+		userRepository.save(users);
 		return findUserByAuthentication(authentication).getFavourites().stream()
 				  .map(item -> productMapper.toResponse(item))
 				  .collect(Collectors.toList());
@@ -45,16 +49,14 @@ public class FavouriteService implements IFavouriteService {
 	public List<ProductResponse> removeProductInFavourite(Long productId, Authentication authentication) throws UserException, ProductException {
 		Users users = findUserByAuthentication(authentication);
 		Product product = findProductById(productId);
-		if (users.getFavourites().contains(product)) {
-			throw new UserException("You has product in your favourite");
+		if (!users.getFavourites().contains(product)) {
+			throw new UserException("You no has product in your favourite");
 		}
-		users.getFavourites().add(product);
+		users.getFavourites().remove(product);
 		return userRepository.save(users).getFavourites().stream()
 				  .map(item -> productMapper.toResponse(item))
 				  .collect(Collectors.toList());
 	}
-	
-	
 	
 	
 	public Product findProductById(Long productId) throws ProductException {
@@ -65,12 +67,12 @@ public class FavouriteService implements IFavouriteService {
 	public Users findUserByAuthentication(Authentication authentication) throws UserException {
 		if (authentication != null && authentication.isAuthenticated()) {
 			String username = authentication.getName();
-			return findUserByEmail(username);
+			return findUserByUserName(username);
 		}
 		throw new UserException("Un Authentication");
 	}
 	
-	public Users findUserByEmail(String email) throws UserException {
+	public Users findUserByUserName(String email) throws UserException {
 		Optional<Users> optionalUsers = userRepository.findByEmail(email);
 		return optionalUsers.orElseThrow(() -> new UserException("user not found"));
 	}

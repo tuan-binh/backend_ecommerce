@@ -8,16 +8,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import ra.exception.ProductException;
-import ra.exception.RateException;
 import ra.exception.UserException;
-import ra.mapper.product.ProductMapper;
-import ra.model.dto.request.RateRequest;
-import ra.model.dto.response.ProductResponse;
+import ra.model.dto.request.UserUpdate;
 import ra.model.dto.response.UserResponse;
 import ra.service.user.IUserService;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -27,8 +22,6 @@ public class UserController {
 	
 	@Autowired
 	private IUserService userService;
-	@Autowired
-	private ProductMapper productMapper;
 	
 	@GetMapping("/get_all")
 	public ResponseEntity<Page<UserResponse>> getAllUsers(@PageableDefault(page = 0, size = 3) Pageable pageable, @RequestParam(value = "search", defaultValue = "") Optional<String> search) {
@@ -43,6 +36,16 @@ public class UserController {
 	@GetMapping("/change_status/{id}")
 	public ResponseEntity<UserResponse> handleChangeStatus(@PathVariable Long id) throws UserException {
 		return new ResponseEntity<>(userService.changeStatus(id), HttpStatus.OK);
+	}
+	
+	@PutMapping("/update_info")
+	public ResponseEntity<UserResponse> handleUpdateInfo(@RequestBody UserUpdate userUpdate, Authentication authentication) throws UserException {
+		return new ResponseEntity<>(userService.updateYourInfo(userUpdate, authentication), HttpStatus.OK);
+	}
+	
+	@PutMapping("/change_password")
+	public ResponseEntity<UserResponse> handleChangePassword(@RequestParam("password") String password, Authentication authentication) throws UserException {
+		return new ResponseEntity<>(userService.changePassword(password, authentication), HttpStatus.OK);
 	}
 	
 	

@@ -3,17 +3,16 @@ package ra.mapper.cartitem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ra.exception.OrderException;
+import ra.exception.ProductDetailException;
 import ra.exception.ProductException;
 import ra.mapper.IGenericMapper;
 import ra.model.domain.CartItem;
 import ra.model.domain.Orders;
-import ra.model.domain.Product;
+import ra.model.domain.ProductDetail;
 import ra.model.dto.request.CartItemRequest;
 import ra.model.dto.response.CartItemResponse;
 import ra.repository.IOrderRepository;
-import ra.repository.IProductRepository;
-import ra.service.orders.OrderService;
-import ra.service.product.ProductService;
+import ra.repository.IProductDetailRepository;
 
 import java.util.Optional;
 
@@ -21,18 +20,17 @@ import java.util.Optional;
 public class CartItemMapper implements IGenericMapper<CartItem, CartItemRequest, CartItemResponse> {
 	
 	@Autowired
-	private IProductRepository productRepository;
-	@Autowired
 	private IOrderRepository orderRepository;
+	@Autowired
+	private IProductDetailRepository productDetailRepository;
 	
 	@Override
-	public CartItem toEntity(CartItemRequest cartItemRequest) throws ProductException, OrderException {
+	public CartItem toEntity(CartItemRequest cartItemRequest) throws ProductException, OrderException, ProductDetailException {
 		return CartItem.builder()
-				  .product(findProductById(cartItemRequest.getProductId()))
+				  .productDetail(findProductDetail(cartItemRequest.getProductDetailId()))
 				  .orders(findOrderById(cartItemRequest.getOrderId()))
 				  .price(cartItemRequest.getPrice())
 				  .quantity(cartItemRequest.getQuantity())
-				  .status(cartItemRequest.isStatus())
 				  .build();
 	}
 	
@@ -40,17 +38,14 @@ public class CartItemMapper implements IGenericMapper<CartItem, CartItemRequest,
 	public CartItemResponse toResponse(CartItem cartItem) {
 		return CartItemResponse.builder()
 				  .id(cartItem.getId())
-				  .product(cartItem.getProduct())
-				  .orders(cartItem.getOrders())
 				  .price(cartItem.getPrice())
 				  .quantity(cartItem.getQuantity())
-				  .status(cartItem.isStatus())
 				  .build();
 	}
 	
-	public Product findProductById(Long productId) throws ProductException {
-		Optional<Product> optionalProduct = productRepository.findById(productId);
-		return optionalProduct.orElseThrow(() -> new ProductException("product not found"));
+	public ProductDetail findProductDetail(Long productDetailId) throws ProductDetailException {
+		Optional<ProductDetail> optionalProductDetail = productDetailRepository.findById(productDetailId);
+		return optionalProductDetail.orElseThrow(() -> new ProductDetailException("product detail not found"));
 	}
 	
 	public Orders findOrderById(Long orderId) throws OrderException {

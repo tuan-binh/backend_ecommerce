@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "product_detail")
@@ -21,20 +23,21 @@ public class ProductDetail {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne( fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id")
-	@JsonIgnore
 	private Product product;
 	
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "color_id")
-	@JsonIgnore
 	private Color color;
 	
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "size_id")
-	@JsonIgnore
 	private Size size;
+	
+	@OneToMany(fetch = FetchType.LAZY,mappedBy = "productDetail")
+	@JsonIgnore
+	private List<CartItem> cartItems = new ArrayList<>();
 	
 	private int stock;
 	

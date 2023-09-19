@@ -39,7 +39,7 @@ public class Orders {
 	@JsonIgnore
 	private List<CartItem> list = new ArrayList<>();
 	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private Users users;
 	

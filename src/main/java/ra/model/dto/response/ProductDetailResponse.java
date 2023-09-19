@@ -15,11 +15,11 @@ import ra.model.domain.Size;
 public class ProductDetailResponse {
 	private Long id;
 	
-	private Product product;
+	private String product;
 	
-	private Color color;
+	private String color;
 	
-	private Size size;
+	private String size;
 	
 	private int stock;
 	

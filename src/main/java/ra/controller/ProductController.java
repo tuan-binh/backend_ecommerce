@@ -12,10 +12,12 @@ import ra.exception.*;
 import ra.model.dto.request.ProductDetailRequest;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
+import ra.model.dto.response.ImageResponse;
 import ra.model.dto.response.ProductDetailResponse;
 import ra.model.dto.response.ProductResponse;
 import ra.service.product.IProductService;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -55,18 +57,13 @@ public class ProductController {
 	}
 	
 	@PutMapping("/add_image/to_product/{id}")
-	public ResponseEntity<ProductResponse> handleAddImageToProduct(@RequestParam("file") MultipartFile multipartFile, @PathVariable Long id) throws ProductException {
+	public ResponseEntity<List<ImageResponse>> handleAddImageToProduct(@RequestParam("file") MultipartFile multipartFile, @PathVariable Long id) throws ProductException {
 		return new ResponseEntity<>(productService.addImageToProduct(multipartFile, id), HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/delete_image/{idImage}/in_product/{idProduct}")
-	public ResponseEntity<ProductResponse> handleDeleteImageInProduct(@PathVariable Long idImage, @PathVariable Long idProduct) throws ImageProductException, ProductException {
-		return new ResponseEntity<>(productService.deleteImageInProduct(idImage, idProduct), HttpStatus.OK);
-	}
-	
-	@PostMapping("/add_product_detail")
-	public ResponseEntity<ProductDetailResponse> handleAddProductDetail(@RequestBody ProductDetailRequest productDetailRequest) throws ColorException, ProductException, SizeException {
-		return new ResponseEntity<>(productService.addProductDetailToProduct(productDetailRequest), HttpStatus.CREATED);
+	@DeleteMapping("/delete_image/{idImage}")
+	public ResponseEntity<ImageResponse> handleDeleteImageInProduct(@PathVariable Long idImage) throws ImageProductException, ProductException {
+		return new ResponseEntity<>(productService.deleteImageInProduct(idImage), HttpStatus.OK);
 	}
 	
 	@PostMapping("/add_category/{categoryId}/to/{productId}")

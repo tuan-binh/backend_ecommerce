@@ -15,9 +15,6 @@ import ra.model.dto.response.ProductDetailResponse;
 import ra.repository.IColorRepository;
 import ra.repository.IProductRepository;
 import ra.repository.ISizeRepository;
-import ra.service.color.ColorService;
-import ra.service.product.ProductService;
-import ra.service.size.SizeService;
 
 import java.util.Optional;
 
@@ -46,9 +43,9 @@ public class ProductDetailMapper implements IGenericMapper<ProductDetail, Produc
 	public ProductDetailResponse toResponse(ProductDetail productDetail) {
 		return ProductDetailResponse.builder()
 				  .id(productDetail.getId())
-				  .product(productDetail.getProduct())
-				  .color(productDetail.getColor())
-				  .size(productDetail.getSize())
+				  .product(productDetail.getProduct().getProductName())
+				  .color(productDetail.getColor().getColorName())
+				  .size(productDetail.getSize().getSizeName())
 				  .stock(productDetail.getStock())
 				  .status(productDetail.isStatus())
 				  .build();
@@ -59,14 +56,14 @@ public class ProductDetailMapper implements IGenericMapper<ProductDetail, Produc
 		return optionalProduct.orElseThrow(() -> new ProductException("product not found"));
 	}
 	
-	public Color findColorById(Long productId) throws ProductException {
-		Optional<Color> optionalColor = colorRepository.findById(productId);
-		return optionalColor.orElseThrow(() -> new ProductException("product not found"));
+	public Color findColorById(Long colorId) throws ColorException {
+		Optional<Color> optionalColor = colorRepository.findById(colorId);
+		return optionalColor.orElseThrow(() -> new ColorException("color not found"));
 	}
 	
-	public Size findSizeById(Long productId) throws ProductException {
-		Optional<Size> optionalSize = sizeRepository.findById(productId);
-		return optionalSize.orElseThrow(() -> new ProductException("product not found"));
+	public Size findSizeById(Long sizeId) throws SizeException {
+		Optional<Size> optionalSize = sizeRepository.findById(sizeId);
+		return optionalSize.orElseThrow(() -> new SizeException("size not found"));
 	}
 	
 }

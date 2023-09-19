@@ -9,4 +9,7 @@ import ra.model.domain.Orders;
 @Repository
 public interface IOrderRepository extends JpaRepository<Orders, Long> {
 	Page<Orders> findAllByPhone(Pageable pageable, String phone);
+	
+	Orders findOrdersByUsersIdAndStatus(Long id, boolean status);
+	
 }

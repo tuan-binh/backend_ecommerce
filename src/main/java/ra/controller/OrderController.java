@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import ra.exception.ProductException;
-import ra.exception.UserException;
+import ra.exception.*;
+import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
 import ra.service.orders.IOrderService;
 
@@ -20,58 +20,24 @@ public class OrderController {
 	@Autowired
 	private IOrderService orderService;
 	
-	@GetMapping("/getOrders")
+	@GetMapping("/get_all")
 	public ResponseEntity<List<OrderResponse>> getOrders(Authentication authentication) throws UserException {
 		return new ResponseEntity<>(orderService.getOrders(authentication), HttpStatus.OK);
 	}
 	
-	@PostMapping("/buy/{productId}")
-	public ResponseEntity<OrderResponse> addProductToOrders(@PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
-		return new ResponseEntity<>(orderService.addProductToOrder(productId, authentication), HttpStatus.CREATED);
+	@GetMapping("/buy/{productDetailId}")
+	public ResponseEntity<CartItemResponse> addProductToOrders(@PathVariable Long productDetailId, Authentication authentication) throws UserException, ProductException, ProductDetailException, CartItemException {
+		return new ResponseEntity<>(orderService.addProductToOrder(productDetailId, authentication), HttpStatus.CREATED);
 	}
-
-//	@PostMapping("/buy/{productId}/in_cart/{userId}")
-//	public ResponseEntity<OrderResponse> handleAddProductInCartUser(@PathVariable Long productId, @PathVariable Long userId) throws UserException, ProductException {
-//		return new ResponseEntity<>(orderService.buyProductInCartUser(productId, userId), HttpStatus.OK);
-//	}
-//
-//	@PostMapping("/add_product/{productId}/to/{orderId}")
-//	public ResponseEntity<OrderResponse> handleAddProductToOrder(@PathVariable Long productId,@PathVariable Long orderId) {
-//		return new ResponseEntity<>(orderService.addProductToOrderUser(productId,orderId),HttpStatus.OK);
-//	}
-//
-//	@PostMapping("/add/{cartId}/in_cart/{userId}")
-//	public ResponseEntity<OrderResponse> handleAddMoreProductInCartUser(@PathVariable Long cartId, @PathVariable Long userId) {
-//		// Thực hiện action add more product in cart user
-////		return new ResponseEntity<>("Add Success", HttpStatus.OK);
-//		return null;
-//	}
-//
-//	@PostMapping("/minus/{cartId}/in_cart/{userId}")
-//	public ResponseEntity<OrderResponse> handleMinusProductInCartUser(@PathVariable Long cartId, @PathVariable Long userId) {
-//		// Thực hiện action minus product in cart user
-////		return new ResponseEntity<>("Add Success", HttpStatus.OK);
-//		return null;
-//	}
-//
-//	@GetMapping("/get_order/{id}")
-//	public ResponseEntity<OrderResponse> findOrderById(@PathVariable Long id) {
-//
-//		return null;
-//	}
-//
-//	@GetMapping("/cancel_order/{id}")
-//	public ResponseEntity<OrderResponse> handleCancelOrder(@PathVariable Long id) {
-//
-//		return null;
-//	}
-//
-//	@GetMapping("/change_delevery/{id}")
-//	public ResponseEntity<OrderResponse> handleChangeDeliveryOrder(@PathVariable Long id) {
-//		// Thực hiện action change delivery in order
-//
-//		return null;
-//	}
 	
+	@GetMapping("/plus/{orderDetailId}")
+	public ResponseEntity<CartItemResponse> plusOrderDetail(@PathVariable Long orderDetailId, Authentication authentication) throws CartItemException, OrderException, UserException {
+		return new ResponseEntity<>(orderService.plusOrderDetail(orderDetailId, authentication), HttpStatus.OK);
+	}
+	
+	@GetMapping("/minus/{orderDetailId}")
+	public ResponseEntity<CartItemResponse> minusOrderDetail(@PathVariable Long orderDetailId, Authentication authentication) throws CartItemException, UserException, OrderException {
+		return new ResponseEntity<>(orderService.minusOrderDetail(orderDetailId, authentication), HttpStatus.OK);
+	}
 	
 }

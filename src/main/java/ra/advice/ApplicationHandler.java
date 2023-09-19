@@ -80,4 +80,9 @@ public class ApplicationHandler {
 		return "Exception image --> " + e.getMessage();
 	}
 	
+	@ExceptionHandler(ProductDetailException.class)
+	public String handleExceptionProductDetail(ProductDetailException e) {
+		return "Exception product detail --> " + e.getMessage();
+	}
+	
 }

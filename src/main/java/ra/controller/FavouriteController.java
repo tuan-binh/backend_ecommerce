@@ -20,17 +20,17 @@ public class FavouriteController {
 	@Autowired
 	private IFavouriteService favouriteService;
 	
-	@GetMapping("/getFavourite")
+	@GetMapping("/get_all")
 	public ResponseEntity<List<ProductResponse>> getFavourite(Authentication authentication) throws UserException {
 		return new ResponseEntity<>(favouriteService.getFavourite(authentication), HttpStatus.OK);
 	}
 	
-	@PostMapping("/favourite/{productId}")
+	@PostMapping("/add/{productId}")
 	public ResponseEntity<List<ProductResponse>> handleAddProductToFavourite(@PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
 		return new ResponseEntity<>(favouriteService.addProductToFavourite(productId, authentication), HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/favourite/{productId}")
+	@DeleteMapping("/remove/{productId}")
 	public ResponseEntity<List<ProductResponse>> handleRemoveProductInFavourite(@PathVariable Long productId, Authentication authentication) throws UserException, ProductException {
 		return new ResponseEntity<>(favouriteService.removeProductInFavourite(productId, authentication), HttpStatus.OK);
 	}
