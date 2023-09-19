@@ -34,9 +34,10 @@ public class OrderService implements IOrderService {
 	@Autowired
 	private IUserRepository userRepository;
 	@Autowired
-	private IProductRepository productRepository;
+	private ICouponRepository couponRepository;
 	@Autowired
 	private IProductDetailRepository productDetailRepository;
+	
 	
 	@Override
 	public Page<OrderResponse> findAll(Pageable pageable, Optional<String> phone) {
@@ -126,14 +127,10 @@ public class OrderService implements IOrderService {
 	public CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws ProductException, UserException, ProductDetailException, CartItemException {
 		ProductDetail productDetail = findProductDetailId(productDetailId);
 		Users users = findUserByAuthentication(authentication);
-//		if (users.getAddress() == null || users.getPhone() == null) {
-//			throw new UserException("you must be update your info");
-//		}
 		Orders order = findCartUser(users);
 		if (order == null) {
 			Orders orders = Orders.builder()
 					  .eDelivered(EDelivered.PENDING)
-					  .deliveryTime(new Date())
 					  .location(users.getAddress())
 					  .phone(users.getPhone())
 					  .users(users)
@@ -212,11 +209,9 @@ public class OrderService implements IOrderService {
 	
 	@Override
 	public List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws UserException, OrderException {
-		// đang lỗi
 		Users users = findUserByAuthentication(authentication);
 		Orders orders = findCartUser(users);
 		if (orders != null) {
-//			cartItemRepository.deleteAllByOrders(orders);
 			cartItemRepository.resetCartItemByOrderId(orders);
 			return orders.getList().stream().map(item -> cartItemMapper.toResponse(item)).collect(Collectors.toList());
 		}
@@ -224,8 +219,42 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public OrderResponse checkoutYourCart(Authentication authentication) {
-		return null;
+	public OrderResponse checkoutYourCart(Authentication authentication) throws UserException {
+		Users users = findUserByAuthentication(authentication);
+		Orders orders = findCartUser(users);
+		if (users.getAddress() == null || users.getPhone() == null) {
+			throw new UserException("you must be update your info");
+		}
+		for (CartItem c : orders.getList()) {
+			c.setPrice(c.getProductDetail().getProduct().getPrice());
+		}
+		orders.setLocation(users.getAddress());
+		orders.setPhone(users.getPhone());
+		orders.setDeliveryTime(new Date());
+		orders.setTotal(orders.getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
+		if (orders.getCoupon() != null) {
+			orders.setTotal(orders.getTotal() - (orders.getTotal() * orders.getCoupon().getPercent()));
+		}
+		orders.setStatus(true);
+		orders.setEDelivered(EDelivered.PREPARE);
+		return orderMapper.toResponse(orderRepository.save(orders));
+	}
+	
+	@Override
+	public OrderResponse addCouponToOrder(Long couponId, Authentication authentication) throws CouponException, UserException, OrderException {
+		Users users = findUserByAuthentication(authentication);
+		Coupon coupon = findCouponById(couponId);
+		Orders orders = findCartUser(users);
+		if (orders == null) {
+			throw new OrderException("your cart is empty");
+		}
+		orders.setCoupon(coupon);
+		return orderMapper.toResponse(orderRepository.save(orders));
+	}
+	
+	public Coupon findCouponById(Long couponId) throws CouponException {
+		Optional<Coupon> optionalCoupon = couponRepository.findById(couponId);
+		return optionalCoupon.orElseThrow(() -> new CouponException("coupon not found"));
 	}
 	
 	public CartItem findCartItemById(Long orderDetailId) throws CartItemException {

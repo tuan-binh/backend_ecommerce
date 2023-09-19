@@ -37,8 +37,10 @@ public interface IOrderService {
 	
 	List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws UserException, OrderException;
 	
-	OrderResponse checkoutYourCart(Authentication authentication);
+	OrderResponse addCouponToOrder(Long couponId, Authentication authentication) throws CouponException, UserException, OrderException;
 	
-	OrderResponse changeDelivery(String typeDelivery, Long id) throws OrderException;
+	OrderResponse checkoutYourCart(Authentication authentication) throws UserException;
+	
+	OrderResponse changeDelivery(String typeDelivery, Long orderId) throws OrderException;
 	
 }

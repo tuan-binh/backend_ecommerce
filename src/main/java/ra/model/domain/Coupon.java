@@ -1,5 +1,6 @@
 package ra.model.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
@@ -23,12 +24,16 @@ public class Coupon {
 	
 	private String coupon;
 	
+	private double percent;
+	
 	private int stock;
 	
 	@Column(name = "start_date")
+	@JsonFormat(pattern = "dd/MM/yyyy")
 	private Date startDate;
 	
 	@Column(name = "end_date")
+	@JsonFormat(pattern = "dd/MM/yyyy")
 	private Date endDate;
 	
 	private boolean status;

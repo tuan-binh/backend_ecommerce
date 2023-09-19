@@ -17,6 +17,7 @@ public class CouponResponse {
 	
 	private String coupon;
 	
+	private double percent;
 	private int stock;
 	
 	private Date startDate;

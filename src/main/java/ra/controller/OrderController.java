@@ -3,6 +3,7 @@ package ra.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ra.exception.*;
@@ -55,9 +56,20 @@ public class OrderController {
 		return new ResponseEntity<>(orderService.removeAllInYourCart(authentication), HttpStatus.OK);
 	}
 	
+	@PutMapping("/add_coupon/{couponId}")
+	public ResponseEntity<OrderResponse> addCouponToOrder(@PathVariable Long couponId, Authentication authentication) throws CouponException, UserException, OrderException {
+		return new ResponseEntity<>(orderService.addCouponToOrder(couponId, authentication), HttpStatus.OK);
+	}
+	
 	@PostMapping("/check_out")
-	public ResponseEntity<OrderResponse> checkoutYourCart(Authentication authentication) {
+	public ResponseEntity<OrderResponse> checkoutYourCart(Authentication authentication) throws UserException {
 		return new ResponseEntity<>(orderService.checkoutYourCart(authentication), HttpStatus.OK);
+	}
+	
+	@PutMapping("/change_delivery/{orderId}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+	public ResponseEntity<OrderResponse> changeDeliveryOrder(@RequestParam("typeDelivery") String typeDelivery, @PathVariable Long orderId) throws OrderException {
+		return new ResponseEntity<>(orderService.changeDelivery(typeDelivery, orderId), HttpStatus.OK);
 	}
 	
 }
