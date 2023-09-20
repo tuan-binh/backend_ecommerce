@@ -8,10 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import ra.exception.CategoryException;
-import ra.exception.ImageProductException;
-import ra.exception.ProductException;
+import ra.exception.*;
+import ra.model.dto.request.ImageRequest;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ImageResponse;
@@ -43,8 +41,8 @@ public class ProductController {
 	}
 	
 	@PostMapping("/add")
-	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<ProductResponse> handleAddProduct(@ModelAttribute ProductRequest productRequest) throws ProductException, CategoryException {
+//	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+	public ResponseEntity<ProductResponse> handleAddProduct(@ModelAttribute ProductRequest productRequest) throws ProductException, CategoryException, ImageProductException {
 		return new ResponseEntity<>(productService.save(productRequest), HttpStatus.CREATED);
 	}
 	
@@ -60,10 +58,10 @@ public class ProductController {
 		return new ResponseEntity<>(productService.changeStatus(id), HttpStatus.OK);
 	}
 	
-	@PutMapping("/add_image/to_product/{id}")
-	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<List<ImageResponse>> handleAddImageToProduct(@RequestParam("file") MultipartFile multipartFile, @PathVariable Long id) throws ProductException {
-		return new ResponseEntity<>(productService.addImageToProduct(multipartFile, id), HttpStatus.CREATED);
+	@PutMapping("/add_image")
+//	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+	public ResponseEntity<List<ImageResponse>> handleAddImageToProduct(@ModelAttribute ImageRequest imageRequest) throws ProductException, ColorException, CouponException, CategoryException, ProductDetailException, OrderException, SizeException, ImageProductException {
+		return new ResponseEntity<>(productService.addImageToProduct(imageRequest), HttpStatus.CREATED);
 	}
 	
 	@DeleteMapping("/delete_image/{idImage}")

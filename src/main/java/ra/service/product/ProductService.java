@@ -9,20 +9,21 @@ import org.springframework.web.multipart.MultipartFile;
 import ra.exception.*;
 import ra.mapper.image.ImageMapper;
 import ra.mapper.product.ProductMapper;
-import ra.mapper.productDetail.ProductDetailMapper;
-import ra.model.domain.*;
-import ra.model.dto.request.ProductDetailRequest;
+import ra.model.domain.Category;
+import ra.model.domain.ImageProduct;
+import ra.model.domain.Product;
+import ra.model.dto.request.ImageRequest;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ImageResponse;
-import ra.model.dto.response.ProductDetailResponse;
 import ra.model.dto.response.ProductResponse;
-import ra.repository.*;
+import ra.repository.ICategoryRepository;
+import ra.repository.IImageProductRepository;
+import ra.repository.IProductRepository;
 import ra.service.upload_aws.StorageService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -70,15 +71,16 @@ public class ProductService implements IProductService {
 	}
 	
 	@Override
-	public ProductResponse save(ProductRequest productRequest) throws ProductException, CategoryException {
-		
+	public ProductResponse save(ProductRequest productRequest) throws ProductException, CategoryException, ImageProductException {
 		Product product = productMapper.toEntity(productRequest);
 		if (productRepository.existsByProductName(product.getProductName())) {
 			throw new ProductException("exists product name");
 		}
-		
 		List<String> listUrl = new ArrayList<>();
 		for (MultipartFile m : productRequest.getFile()) {
+			if(m.isEmpty()) {
+				throw new ImageProductException("You must be upload load image");
+			}
 			listUrl.add(storageService.uploadFile(m));
 		}
 		// set image active vào cái ảnh đầu tiên
@@ -114,13 +116,21 @@ public class ProductService implements IProductService {
 	}
 	
 	@Override
-	public List<ImageResponse> addImageToProduct(MultipartFile multipartFile, Long id) throws ProductException {
-		Product product = findProductById(id);
-		String url = storageService.uploadFile(multipartFile);
-		product.getImages().add(ImageProduct.builder().image(url).product(product).build());
-		return productRepository.save(product).getImages().stream()
-				  .map(item -> imageMapper.toResponse(item))
-				  .collect(Collectors.toList());
+	public List<ImageResponse> addImageToProduct(ImageRequest imageRequest) throws ProductException, ColorException, CouponException, CategoryException, ProductDetailException, OrderException, SizeException, ImageProductException {
+		ImageProduct imageProduct = imageMapper.toEntity(imageRequest);
+		List<String> listUrl = new ArrayList<>();
+		for (MultipartFile m : imageRequest.getImage()) {
+			if(m.isEmpty()) {
+				throw new ImageProductException("You must be upload load image");
+			}
+			listUrl.add(storageService.uploadFile(m));
+		}
+		List<ImageProduct> list = new ArrayList<>();
+		for (String s : listUrl) {
+			list.add(ImageProduct.builder().image(s).product(imageProduct.getProduct()).build());
+		}
+		iImageProductRepository.saveAll(list);
+		return list.stream().map(item -> imageMapper.toResponse(item)).collect(Collectors.toList());
 	}
 	
 	@Override
@@ -152,7 +162,7 @@ public class ProductService implements IProductService {
 		Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
 		return optionalCategory.orElseThrow(() -> new CategoryException("category not found"));
 	}
-	
+
 //	public Color findColorById(Long colorId) throws ColorException {
 //		Optional<Color> optionalColor = colorRepository.findById(colorId);
 //		return optionalColor.orElseThrow(() -> new ColorException("color not found"));

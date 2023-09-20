@@ -12,6 +12,7 @@ import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
 import ra.service.orders.IOrderService;
 
+import javax.mail.MessagingException;
 import java.util.List;
 
 @RestController
@@ -58,7 +59,7 @@ public class OrderController {
 	}
 	
 	@PostMapping("/check_out")
-	public ResponseEntity<OrderResponse> checkoutYourCart(@RequestBody CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException {
+	public ResponseEntity<OrderResponse> checkoutYourCart(@RequestBody CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException, MessagingException {
 		return new ResponseEntity<>(orderService.checkoutYourCart(checkoutRequest, authentication), HttpStatus.OK);
 	}
 	

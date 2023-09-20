@@ -16,7 +16,9 @@ import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
 import ra.repository.*;
 import ra.security.user_principle.UserPrinciple;
+import ra.service.mail.MailService;
 
+import javax.mail.MessagingException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +41,8 @@ public class OrderService implements IOrderService {
 	private ICouponRepository couponRepository;
 	@Autowired
 	private IProductDetailRepository productDetailRepository;
+	@Autowired
+	private MailService mailService;
 	
 	
 	@Override
@@ -234,7 +238,7 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public OrderResponse checkoutYourCart(CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException {
+	public OrderResponse checkoutYourCart(CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException, MessagingException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
 		if (userPrinciple.getAddress() == null || userPrinciple.getPhone() == null) {
@@ -268,8 +272,8 @@ public class OrderService implements IOrderService {
 			}
 			// thực hiện trừ stock ở trong product detail
 			minusStockInProduct(orders.get().getList());
+			mailService.sendHtmlToMail(userPrinciple.getEmail(),null,"Thông báo đơn hàng của bạn","");
 			return orderMapper.toResponse(orderRepository.save(orders.get()));
-			
 		}
 		throw new OrderException("your cart is empty");
 	}

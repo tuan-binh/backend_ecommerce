@@ -2,14 +2,11 @@ package ra.service.product;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
 import ra.exception.*;
-import ra.model.domain.ImageProduct;
-import ra.model.dto.request.ProductDetailRequest;
+import ra.model.dto.request.ImageRequest;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ImageResponse;
-import ra.model.dto.response.ProductDetailResponse;
 import ra.model.dto.response.ProductResponse;
 
 import java.util.List;
@@ -23,13 +20,13 @@ public interface IProductService {
 	
 	ProductResponse findById(Long id) throws ProductException;
 	
-	ProductResponse save(ProductRequest productRequest) throws ProductException, CategoryException;
+	ProductResponse save(ProductRequest productRequest) throws ProductException, CategoryException, ImageProductException;
 	
 	ProductResponse update(ProductUpdate productUpdate, Long id) throws CategoryException;
 	
 	ProductResponse changeStatus(Long id) throws ProductException;
 	
-	List<ImageResponse> addImageToProduct(MultipartFile multipartFile, Long id) throws ProductException;
+	List<ImageResponse> addImageToProduct(ImageRequest imageRequest) throws ProductException, ColorException, CouponException, CategoryException, ProductDetailException, OrderException, SizeException, ImageProductException;
 	
 	ImageResponse deleteImageInProduct(Long idImage) throws ImageProductException, ProductException;
 	

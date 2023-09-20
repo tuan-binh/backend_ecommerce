@@ -9,6 +9,7 @@ import ra.model.dto.request.OrderRequest;
 import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
 
+import javax.mail.MessagingException;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +39,7 @@ public interface IOrderService {
 	
 	List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws UserException, OrderException;
 	
-	OrderResponse checkoutYourCart(CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException;
+	OrderResponse checkoutYourCart(CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException, MessagingException;
 	
 	OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException;
 	
