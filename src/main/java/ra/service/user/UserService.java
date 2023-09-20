@@ -13,28 +13,29 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ra.exception.OrderException;
 import ra.exception.RoleException;
 import ra.exception.UserException;
 import ra.mapper.user.UserMapper;
-import ra.model.domain.ERole;
-import ra.model.domain.Roles;
-import ra.model.domain.Users;
+import ra.model.domain.*;
 import ra.model.dto.request.ChangePassword;
 import ra.model.dto.request.UserLogin;
 import ra.model.dto.request.UserRegister;
 import ra.model.dto.request.UserUpdate;
+import ra.model.dto.response.CountOrderByUser;
 import ra.model.dto.response.JwtResponse;
+import ra.model.dto.response.RevenueByMonth;
 import ra.model.dto.response.UserResponse;
+import ra.repository.IOrderRepository;
 import ra.repository.IUserRepository;
 import ra.security.jwt.JwtEntryPoint;
 import ra.security.jwt.JwtProvider;
 import ra.security.user_principle.UserPrinciple;
 import ra.service.role.IRoleService;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,6 +53,8 @@ public class UserService implements IUserService {
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	private AuthenticationManager authenticationManager;
+	@Autowired
+	private IOrderRepository orderRepository;
 	@Autowired
 	private JwtProvider jwtProvider;
 	
@@ -181,8 +184,52 @@ public class UserService implements IUserService {
 	}
 	
 	@Override
-	public String handleStatistical() {
-		return null;
+	public List<CountOrderByUser> handleStatistical() throws OrderException, UserException {
+		List<CountOrderByUser> list = new ArrayList<>();
+		for (Long id : getAllIdUser()) {
+			Users users = findUserById(id);
+			if (users.getRoles().stream().noneMatch(item -> item.getRoleName().equals(ERole.ROLE_ADMIN))) {
+				list.add(CountOrderByUser.builder()
+						  .fullName(users.getFullName())
+						  .email(users.getEmail())
+						  .quantity(orderRepository.countOrdersByUsersIdAndStatus(id, true))
+						  .build());
+			}
+		}
+		list.sort(Comparator.comparingInt(CountOrderByUser::getQuantity).reversed());
+		return list;
+	}
+	
+	@Override
+	public List<RevenueByMonth> getStatisticalRevenue(String year) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+		List<RevenueByMonth> list = new ArrayList<>();
+		for (int i = 0; i < 12; i++) {
+			List<Orders> orderByMonth = new ArrayList<>();
+			for (Orders o : orderRepository.findAll()) {
+				LocalDate date = LocalDate.parse(o.getDeliveryTime().toString(), formatter);
+				if (o.isStatus() && o.getEDelivered().equals(EDelivered.SUCCESS) && date.getMonthValue() == (i + 1) && date.getYear() == Integer.parseInt(year)) {
+					orderByMonth.add(o);
+				}
+			}
+			double sum = 0;
+			for (Orders o : orderByMonth) {
+				sum += o.getTotal();
+			}
+			list.add(RevenueByMonth.builder()
+					  .month(i + 1)
+					  .quantity(orderByMonth.size())
+					  .revenue(sum)
+					  .build());
+		}
+		
+		return list;
+	}
+	
+	public List<Long> getAllIdUser() {
+		List<Long> list = new ArrayList<>();
+		userRepository.findAll().forEach(item -> list.add(item.getId()));
+		return list;
 	}
 	
 	public Users findUserByAuthentication(Authentication authentication) throws UserException {
