@@ -38,6 +38,10 @@ public class FavouriteService implements IFavouriteService {
 	public List<ProductResponse> addProductToFavourite(Long productId, Authentication authentication) throws UserException, ProductException {
 		Product product = findProductById(productId);
 		Users users = findUserByAuthentication(authentication);
+		boolean check = users.getFavourites().contains(product);
+		if(check) {
+			throw new ProductException("you have product in your favourite");
+		}
 		users.getFavourites().add(product);
 		userRepository.save(users);
 		return findUserByAuthentication(authentication).getFavourites().stream()

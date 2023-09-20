@@ -28,7 +28,6 @@ public class ProductController {
 	@Autowired
 	private IProductService productService;
 	
-	
 	@GetMapping("/get_all")
 	public ResponseEntity<Page<ProductResponse>> getAllProducts(@PageableDefault(page = 0, size = 3) Pageable pageable, @RequestParam(value = "search", defaultValue = "") Optional<String> search) {
 		return new ResponseEntity<>(productService.findAll(pageable, search), HttpStatus.OK);
@@ -56,6 +55,11 @@ public class ProductController {
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ProductResponse> handleChangeStatusProduct(@PathVariable Long id) throws ProductException {
 		return new ResponseEntity<>(productService.changeStatus(id), HttpStatus.OK);
+	}
+	
+	@PutMapping("/change_avatar/{imageId}/in/{productId}")
+	public ResponseEntity<ImageResponse> handleChangeImageAvatar(@PathVariable Long imageId, @PathVariable Long productId) throws ImageProductException, ProductException {
+		return new ResponseEntity<>(productService.changeImageAvatar(imageId, productId), HttpStatus.OK);
 	}
 	
 	@PostMapping("/add_image")

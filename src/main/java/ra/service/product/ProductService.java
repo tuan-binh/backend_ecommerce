@@ -78,7 +78,7 @@ public class ProductService implements IProductService {
 		}
 		List<String> listUrl = new ArrayList<>();
 		for (MultipartFile m : productRequest.getFile()) {
-			if(m.isEmpty()) {
+			if (m.isEmpty()) {
 				throw new ImageProductException("You must be upload load image");
 			}
 			listUrl.add(storageService.uploadFile(m));
@@ -110,6 +110,19 @@ public class ProductService implements IProductService {
 		return productMapper.toResponse(productRepository.save(product));
 	}
 	
+	@Override
+	public ImageResponse changeImageAvatar(Long imageId, Long productId) throws ImageProductException, ProductException {
+		ImageProduct imageProduct = findImageById(imageId);
+		Product product = findProductById(productId);
+		imageProduct.setProduct(product);
+		return imageMapper.toResponse(iImageProductRepository.save(imageProduct));
+	}
+	
+	public ImageProduct findImageById(Long imageId) throws ImageProductException {
+		Optional<ImageProduct> optionalImageProduct = iImageProductRepository.findById(imageId);
+		return optionalImageProduct.orElseThrow(() -> new ImageProductException("image not found"));
+	}
+	
 	public Product findProductById(Long id) throws ProductException {
 		Optional<Product> optionalProduct = productRepository.findById(id);
 		return optionalProduct.orElseThrow(() -> new ProductException("product not found"));
@@ -120,7 +133,7 @@ public class ProductService implements IProductService {
 		ImageProduct imageProduct = imageMapper.toEntity(imageRequest);
 		List<String> listUrl = new ArrayList<>();
 		for (MultipartFile m : imageRequest.getImage()) {
-			if(m.isEmpty()) {
+			if (m.isEmpty()) {
 				throw new ImageProductException("You must be upload load image");
 			}
 			listUrl.add(storageService.uploadFile(m));
