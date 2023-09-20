@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import ra.exception.*;
+import ra.model.dto.request.CheckoutRequest;
 import ra.model.dto.request.OrderRequest;
 import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
@@ -31,15 +32,13 @@ public interface IOrderService {
 	
 	CartItemResponse plusOrderDetail(Long orderDetailId, Authentication authentication) throws OrderException, CartItemException, UserException;
 	
-	CartItemResponse minusOrderDetail(Long orderDetailId, Authentication authentication) throws  OrderException, CartItemException;
+	CartItemResponse minusOrderDetail(Long orderDetailId, Authentication authentication) throws OrderException, CartItemException;
 	
 	CartItemResponse removeOrderDetail(Long orderDetailId, Authentication authentication) throws UserException, CartItemException, OrderException;
 	
 	List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws UserException, OrderException;
 	
-	OrderResponse addCouponToOrder(Long couponId, Authentication authentication) throws CouponException, UserException, OrderException;
-	
-	OrderResponse checkoutYourCart(Authentication authentication) throws UserException, OrderException;
+	OrderResponse checkoutYourCart(CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException;
 	
 	OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException;
 	

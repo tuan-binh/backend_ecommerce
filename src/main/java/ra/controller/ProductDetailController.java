@@ -3,6 +3,7 @@ package ra.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ra.exception.ColorException;
 import ra.exception.ProductDetailException;
@@ -28,11 +29,13 @@ public class ProductDetailController {
 	}
 	
 	@PostMapping("/add_product_detail")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ProductDetailResponse> handleAddProductDetail(@RequestBody ProductDetailRequest productDetailRequest) throws ColorException, ProductException, SizeException, ProductDetailException {
 		return new ResponseEntity<>(productDetailService.addProductDetailToProduct(productDetailRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{productDetailId}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ProductDetailResponse> handleAddStockToProductDetail(@RequestBody ProductDetailRequest productDetailRequest, @PathVariable Long productDetailId) throws ColorException, ProductException, SizeException, ProductDetailException {
 		return new ResponseEntity<>(productDetailService.addStockToProductDetail(productDetailRequest, productDetailId), HttpStatus.OK);
 	}

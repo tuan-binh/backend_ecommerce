@@ -18,6 +18,7 @@ import ra.model.dto.response.RateResponse;
 import ra.repository.IProductRepository;
 import ra.repository.IRateRepository;
 import ra.repository.IUserRepository;
+import ra.security.user_principle.UserPrinciple;
 
 import java.util.List;
 import java.util.Optional;
@@ -78,7 +79,8 @@ public class RateService implements IRateService {
 	
 	@Override
 	public RateResponse rateProductByUser(RateRequest rateRequest, Authentication authentication) throws ProductException, UserException {
-		Users users = findUserByAuthentication(authentication);
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Users users = findUserByUserName(userPrinciple.getEmail());
 		Rates rates = rateMapper.toEntity(rateRequest);
 		rates.setUsers(users);
 		return rateMapper.toResponse(rateRepository.save(rates));
@@ -86,7 +88,8 @@ public class RateService implements IRateService {
 	
 	@Override
 	public RateResponse updateRateInProduct(RateRequest rateRequest, Long rateId, Authentication authentication) throws RateException, ProductException, UserException {
-		Users users = findUserByAuthentication(authentication);
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Users users = findUserByUserName(userPrinciple.getEmail());
 		Rates rates = rateMapper.toEntity(rateRequest);
 		rates.setId(rateId);
 		rates.setUsers(users);
@@ -111,14 +114,6 @@ public class RateService implements IRateService {
 	public Product findProductById(Long productId) throws ProductException {
 		Optional<Product> optionalProduct = productRepository.findById(productId);
 		return optionalProduct.orElseThrow(() -> new ProductException("product not found"));
-	}
-	
-	public Users findUserByAuthentication(Authentication authentication) throws UserException {
-		if (authentication != null && authentication.isAuthenticated()) {
-			String username = authentication.getName();
-			return findUserByUserName(username);
-		}
-		throw new UserException("Un Authentication");
 	}
 	
 	public Users findUserByUserName(String email) throws UserException {

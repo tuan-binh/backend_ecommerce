@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ra.exception.CategoryException;
 import ra.model.dto.request.CategoryRequest;
@@ -33,16 +34,19 @@ public class CategoryController {
 	}
 	
 	@PostMapping("/add")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<CategoryResponse> handleAddCategory(@RequestBody CategoryRequest categoryRequest) throws CategoryException {
 		return new ResponseEntity<>(categoryService.save(categoryRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<CategoryResponse> handleUpdateCategory(@RequestBody CategoryRequest categoryRequest, @PathVariable Long id) {
 		return new ResponseEntity<>(categoryService.update(categoryRequest, id), HttpStatus.OK);
 	}
 	
 	@GetMapping("/change_status/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<CategoryResponse> handleChangeStatus(@PathVariable Long id) throws CategoryException {
 		return new ResponseEntity<>(categoryService.changeStatus(id), HttpStatus.OK);
 	}

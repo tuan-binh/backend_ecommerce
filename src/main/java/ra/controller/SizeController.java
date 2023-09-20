@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ra.exception.SizeException;
 import ra.model.dto.request.SizeRequest;
@@ -33,17 +34,19 @@ public class SizeController {
 	}
 	
 	@PostMapping("/add")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<SizeResponse> handleAddSize(@RequestBody SizeRequest sizeRequest) throws SizeException {
 		return new ResponseEntity<>(sizeService.save(sizeRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<SizeResponse> handleUpdateSize(@RequestBody SizeRequest sizeRequest, @PathVariable Long id) {
 		return new ResponseEntity<>(sizeService.update(sizeRequest, id), HttpStatus.OK);
 	}
 	
 	@GetMapping("/change_status/{id}")
-	
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<SizeResponse> handleChangeStatus(@PathVariable Long id) throws SizeException {
 		return new ResponseEntity<>(sizeService.changeStatus(id), HttpStatus.OK);
 	}

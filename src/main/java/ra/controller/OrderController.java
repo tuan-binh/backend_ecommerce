@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ra.exception.*;
+import ra.model.dto.request.CheckoutRequest;
 import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
 import ra.service.orders.IOrderService;
@@ -56,14 +57,9 @@ public class OrderController {
 		return new ResponseEntity<>(orderService.removeAllInYourCart(authentication), HttpStatus.OK);
 	}
 	
-	@PutMapping("/add_coupon/{couponId}")
-	public ResponseEntity<OrderResponse> addCouponToOrder(@PathVariable Long couponId, Authentication authentication) throws CouponException, UserException, OrderException {
-		return new ResponseEntity<>(orderService.addCouponToOrder(couponId, authentication), HttpStatus.OK);
-	}
-	
 	@PostMapping("/check_out")
-	public ResponseEntity<OrderResponse> checkoutYourCart(Authentication authentication) throws UserException, OrderException {
-		return new ResponseEntity<>(orderService.checkoutYourCart(authentication), HttpStatus.OK);
+	public ResponseEntity<OrderResponse> checkoutYourCart(@RequestBody CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException {
+		return new ResponseEntity<>(orderService.checkoutYourCart(checkoutRequest, authentication), HttpStatus.OK);
 	}
 	
 	@GetMapping("/cancel_order/{orderId}")

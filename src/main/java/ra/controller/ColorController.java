@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ra.exception.ColorException;
 import ra.model.dto.request.ColorRequest;
@@ -33,16 +34,19 @@ public class ColorController {
 	}
 	
 	@PostMapping("/add")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ColorResponse> handleAddColor(@RequestBody ColorRequest colorRequest) throws ColorException {
 		return new ResponseEntity<>(colorService.save(colorRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ColorResponse> handleUpdateColor(@RequestBody ColorRequest colorRequest, @PathVariable Long id) {
 		return new ResponseEntity<>(colorService.update(colorRequest, id), HttpStatus.OK);
 	}
 	
 	@GetMapping("/change_status/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ColorResponse> handleChangeStatusColor(@PathVariable Long id) throws ColorException {
 		return new ResponseEntity<>(colorService.changeStatus(id), HttpStatus.OK);
 	}

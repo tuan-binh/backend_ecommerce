@@ -41,7 +41,7 @@ public class Orders {
 	@JoinColumn(name = "user_id")
 	private Users users;
 	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "coupon_id")
 	private Coupon coupon;
 	

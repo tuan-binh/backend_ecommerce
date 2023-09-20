@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ra.exception.CouponException;
 import ra.model.dto.request.CouponRequest;
@@ -31,16 +32,19 @@ public class CouponController {
 	}
 	
 	@PostMapping("/add")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<CouponResponse> handleAddCoupon(@RequestBody CouponRequest couponRequest) throws CouponException {
 		return new ResponseEntity<>(couponService.save(couponRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<CouponResponse> handleUpdateCoupon(@RequestBody CouponRequest couponRequest, @PathVariable Long id) {
 		return new ResponseEntity<>(couponService.update(couponRequest, id), HttpStatus.OK);
 	}
 	
 	@GetMapping("/change_status/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<CouponResponse> handleChangeStatus(@PathVariable Long id) throws CouponException {
 		return new ResponseEntity<>(couponService.changeStatus(id),HttpStatus.OK);
 	}

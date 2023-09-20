@@ -10,13 +10,13 @@ import ra.exception.*;
 import ra.mapper.cartitem.CartItemMapper;
 import ra.mapper.orders.OrderMapper;
 import ra.model.domain.*;
+import ra.model.dto.request.CheckoutRequest;
 import ra.model.dto.request.OrderRequest;
 import ra.model.dto.response.CartItemResponse;
 import ra.model.dto.response.OrderResponse;
 import ra.repository.*;
 import ra.security.user_principle.UserPrinciple;
 
-import javax.swing.text.html.Option;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -113,8 +113,7 @@ public class OrderService implements IOrderService {
 	public List<OrderResponse> getOrders(Authentication authentication) {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		List<Orders> list = orderRepository.findAllByUsersIdAndStatus(userPrinciple.getId(), true);
-		return list.stream().filter(Orders::isStatus)
-				  .map(item -> orderMapper.toResponse(item))
+		return list.stream().map(item -> orderMapper.toResponse(item))
 				  .collect(Collectors.toList());
 	}
 	
@@ -129,11 +128,12 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws  UserException, ProductDetailException, CartItemException {
+	public CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws UserException, ProductDetailException, CartItemException {
 		ProductDetail productDetail = findProductDetailId(productDetailId);
-		Users users = findUserByAuthentication(authentication);
-		Orders order = findCartUser(users);
-		if (order == null) {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Users users = findUserByEmail(userPrinciple.getEmail());
+		Optional<Orders> order = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
+		if (!order.isPresent()) {
 			Orders orders = Orders.builder()
 					  .eDelivered(EDelivered.PENDING)
 					  .location(users.getAddress())
@@ -151,17 +151,17 @@ public class OrderService implements IOrderService {
 			return cartItemMapper.toResponse(cartItem);
 		} else {
 			// có giỏ hàng
-			Optional<CartItem> cartItemOptional = cartItemRepository.findCartItemByOrdersAndProductDetail(order, productDetail);
+			Optional<CartItem> cartItemOptional = cartItemRepository.findCartItemByOrdersAndProductDetail(order.get(), productDetail);
+			CartItem cartItem;
 			if (cartItemOptional.isPresent()) {
 				// đã có sp trong giỏ hàng
-				CartItem cartItem = cartItemOptional.get();
+				cartItem = cartItemOptional.get();
 				cartItem.setQuantity(cartItem.getQuantity() + 1);
-				return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
 			} else {
 				// chưa có sản phẩm trong giỏ hàng
-				CartItem cartItem = CartItem.builder().orders(order).productDetail(productDetail).quantity(1).build();
-				return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
+				cartItem = CartItem.builder().orders(order.get()).productDetail(productDetail).quantity(1).build();
 			}
+			return cartItemMapper.toResponse(cartItemRepository.save(cartItem));
 		}
 	}
 	
@@ -205,7 +205,7 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public CartItemResponse removeOrderDetail(Long orderDetailId, Authentication authentication) throws  CartItemException, OrderException {
+	public CartItemResponse removeOrderDetail(Long orderDetailId, Authentication authentication) throws CartItemException, OrderException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
 		if (orders.isPresent()) {
@@ -221,7 +221,7 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws  OrderException {
+	public List<CartItemResponse> removeAllInYourCart(Authentication authentication) throws OrderException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
 		if (orders.isPresent()) {
@@ -234,7 +234,7 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public OrderResponse checkoutYourCart(Authentication authentication) throws UserException, OrderException {
+	public OrderResponse checkoutYourCart(CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
 		if (userPrinciple.getAddress() == null || userPrinciple.getPhone() == null) {
@@ -244,28 +244,42 @@ public class OrderService implements IOrderService {
 			for (CartItem c : orders.get().getList()) {
 				c.setPrice(c.getProductDetail().getProduct().getPrice());
 			}
-			orders.get().setLocation(userPrinciple.getAddress());
-			orders.get().setPhone(userPrinciple.getPhone());
 			orders.get().setDeliveryTime(new Date());
-			orders.get().setTotal(orders.get().getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
-			if (orders.get().getCoupon() != null) {
-				orders.get().setTotal(orders.get().getTotal() - (orders.get().getTotal() * orders.get().getCoupon().getPercent()));
-			}
 			orders.get().setStatus(true);
 			orders.get().setEDelivered(EDelivered.PREPARE);
+			Coupon coupon = null;
+			if (checkoutRequest.getCouponId() != null) {
+				coupon = findCouponById(checkoutRequest.getCouponId());
+			}
+			if (checkoutRequest.getAddress() == null || checkoutRequest.getPhone() == null) {
+				// check out with my information
+				orders.get().setLocation(userPrinciple.getAddress());
+				orders.get().setPhone(userPrinciple.getPhone());
+				orders.get().setTotal(orders.get().getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
+			} else {
+				// check out with other address or other phone
+				orders.get().setLocation(checkoutRequest.getAddress());
+				orders.get().setPhone(checkoutRequest.getPhone());
+				orders.get().setTotal(orders.get().getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
+			}
+			if (coupon != null) {
+				orders.get().setCoupon(coupon);
+				orders.get().setTotal(orders.get().getTotal() - (orders.get().getTotal() * coupon.getPercent()));
+			}
 			// thực hiện trừ stock ở trong product detail
 			minusStockInProduct(orders.get().getList());
 			return orderMapper.toResponse(orderRepository.save(orders.get()));
+			
 		}
 		throw new OrderException("your cart is empty");
 	}
 	
 	@Override
 	public OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException {
-		Users users = findUserByAuthentication(authentication);
-		Orders orders = findOrderById(orderId);
-		if (users.getOrders().contains(orders)) {
-			orders.setDeliveryTime(new Date());
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Optional<Orders> orders = orderRepository.findByIdAndUsersId(orderId, userPrinciple.getId());
+		if (orders.isPresent()) {
+			orders.get().setDeliveryTime(new Date());
 			return changeDelivery("cancel", orderId);
 		}
 		throw new UserException("Un permission");
@@ -278,26 +292,9 @@ public class OrderService implements IOrderService {
 		}
 	}
 	
-	@Override
-	public OrderResponse addCouponToOrder(Long couponId, Authentication authentication) throws CouponException, UserException, OrderException {
-		Users users = findUserByAuthentication(authentication);
-		Coupon coupon = findCouponById(couponId);
-		Orders orders = findCartUser(users);
-		if (orders == null) {
-			throw new OrderException("your cart is empty");
-		}
-		orders.setCoupon(coupon);
-		return orderMapper.toResponse(orderRepository.save(orders));
-	}
-	
 	public Coupon findCouponById(Long couponId) throws CouponException {
 		Optional<Coupon> optionalCoupon = couponRepository.findById(couponId);
 		return optionalCoupon.orElseThrow(() -> new CouponException("coupon not found"));
-	}
-	
-	public CartItem findCartItemById(Long orderDetailId) throws CartItemException {
-		Optional<CartItem> optionalCartItem = cartItemRepository.findById(orderDetailId);
-		return optionalCartItem.orElseThrow(() -> new CartItemException("cart item not found"));
 	}
 	
 	public ProductDetail findProductDetailId(Long productDetailId) throws ProductDetailException {
@@ -326,23 +323,6 @@ public class OrderService implements IOrderService {
 			default:
 				throw new OrderException("delivery not found");
 		}
-	}
-	
-	public Orders findCartUser(Users users) {
-		for (Orders o : users.getOrders()) {
-			if (!o.isStatus()) {
-				return o;
-			}
-		}
-		return null;
-	}
-	
-	public Users findUserByAuthentication(Authentication authentication) throws UserException {
-		if (authentication != null && authentication.isAuthenticated()) {
-			String username = authentication.getName();
-			return findUserByEmail(username);
-		}
-		throw new UserException("Un Authentication");
 	}
 	
 	public Users findUserByEmail(String email) throws UserException {

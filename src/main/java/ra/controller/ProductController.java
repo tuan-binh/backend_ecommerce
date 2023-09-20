@@ -6,14 +6,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ra.exception.*;
-import ra.model.dto.request.ProductDetailRequest;
+import ra.exception.CategoryException;
+import ra.exception.ImageProductException;
+import ra.exception.ProductException;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
 import ra.model.dto.response.ImageResponse;
-import ra.model.dto.response.ProductDetailResponse;
 import ra.model.dto.response.ProductResponse;
 import ra.service.product.IProductService;
 
@@ -42,36 +43,43 @@ public class ProductController {
 	}
 	
 	@PostMapping("/add")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ProductResponse> handleAddProduct(@ModelAttribute ProductRequest productRequest) throws ProductException, CategoryException {
 		return new ResponseEntity<>(productService.save(productRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ProductResponse> handleUpdateProduct(@RequestBody ProductUpdate productUpdate, @PathVariable Long id) throws CategoryException {
 		return new ResponseEntity<>(productService.update(productUpdate, id), HttpStatus.OK);
 	}
 	
 	@GetMapping("/change_status/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ProductResponse> handleChangeStatusProduct(@PathVariable Long id) throws ProductException {
 		return new ResponseEntity<>(productService.changeStatus(id), HttpStatus.OK);
 	}
 	
 	@PutMapping("/add_image/to_product/{id}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<List<ImageResponse>> handleAddImageToProduct(@RequestParam("file") MultipartFile multipartFile, @PathVariable Long id) throws ProductException {
 		return new ResponseEntity<>(productService.addImageToProduct(multipartFile, id), HttpStatus.CREATED);
 	}
 	
 	@DeleteMapping("/delete_image/{idImage}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ImageResponse> handleDeleteImageInProduct(@PathVariable Long idImage) throws ImageProductException, ProductException {
 		return new ResponseEntity<>(productService.deleteImageInProduct(idImage), HttpStatus.OK);
 	}
 	
 	@PostMapping("/add_category/{categoryId}/to/{productId}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ProductResponse> handleAddCategoryToProduct(@PathVariable Long categoryId, @PathVariable Long productId) throws CategoryException, ProductException {
 		return new ResponseEntity<>(productService.addCategoryToProduct(categoryId, productId), HttpStatus.CREATED);
 	}
 	
 	@DeleteMapping("/remove_category/{productId}")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ProductResponse> handleRemoveCategoryInProduct(@PathVariable Long productId) throws ProductException {
 		return new ResponseEntity<>(productService.removeCategoryInProduct(productId), HttpStatus.OK);
 	}
