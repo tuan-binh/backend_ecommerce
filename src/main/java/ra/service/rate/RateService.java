@@ -86,7 +86,7 @@ public class RateService implements IRateService {
 		List<Orders> orders = orderRepository.findAllByUsersIdAndStatus(userPrinciple.getId(), true);
 		Rates rates = rateMapper.toEntity(rateRequest);
 		boolean check = checkBooleanProduct(orders, rates.getProduct().getId());
-		if(check) {
+		if (check) {
 			rates.setUsers(users);
 			return rateMapper.toResponse(rateRepository.save(rates));
 		}
@@ -115,7 +115,7 @@ public class RateService implements IRateService {
 	
 	public boolean checkBooleanProduct(List<Orders> orders, Long productId) {
 		for (Orders o : orders) {
-			if (!o.getEDelivered().equals(EDelivered.CANCEL)) {
+			if (!o.getEDelivered().equals(EDelivered.CANCEL) && o.getEDelivered().equals(EDelivered.SUCCESS)) {
 				for (CartItem c : o.getList()) {
 					if (Objects.equals(c.getProductDetail().getProduct().getId(), productId)) {
 						return true;
