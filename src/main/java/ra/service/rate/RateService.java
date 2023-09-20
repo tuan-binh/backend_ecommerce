@@ -115,7 +115,7 @@ public class RateService implements IRateService {
 	
 	public boolean checkBooleanProduct(List<Orders> orders, Long productId) {
 		for (Orders o : orders) {
-			if (!o.getEDelivered().equals(EDelivered.CANCEL) && o.getEDelivered().equals(EDelivered.SUCCESS)) {
+			if (o.getEDelivered().equals(EDelivered.SUCCESS)) {
 				for (CartItem c : o.getList()) {
 					if (Objects.equals(c.getProductDetail().getProduct().getId(), productId)) {
 						return true;
