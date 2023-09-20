@@ -33,7 +33,7 @@ public class Orders {
 	
 	private double total;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "orders")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "orders")
 	@JsonIgnore
 	private List<CartItem> list = new ArrayList<>();
 	
@@ -41,7 +41,7 @@ public class Orders {
 	@JoinColumn(name = "user_id")
 	private Users users;
 	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne( fetch = FetchType.EAGER)
 	@JoinColumn(name = "coupon_id")
 	private Coupon coupon;
 	

@@ -38,7 +38,7 @@ public class Coupon {
 	
 	private boolean status;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "coupon")
+	@OneToMany( fetch = FetchType.LAZY, mappedBy = "coupon")
 	@JsonIgnore
 	private List<Orders> orders = new ArrayList<>();
 	

@@ -32,22 +32,21 @@ public class Product {
 	
 	private double price;
 	
-	@Column(name = "view_count")
-	private int viewCount;
+	private int countBuy;
 	
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "category_id")
 	private Category category;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "product")
 	@JsonIgnore
 	private Set<ProductDetail> productDetails = new HashSet<>();
-
+	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
 	@JsonIgnore
 	private List<ImageProduct> images = new ArrayList<>();
-
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "product")
 	@JsonIgnore
 	private List<Rates> rates = new ArrayList<>();
 	

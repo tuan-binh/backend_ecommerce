@@ -27,7 +27,9 @@ public interface IOrderService {
 	
 	List<OrderResponse> getOrders(Authentication authentication) throws UserException;
 	
-	List<CartItemResponse> getCarts(Authentication authentication) throws UserException, OrderException;
+	OrderResponse getOrderById(Long orderId, Authentication authentication) throws OrderException;
+	
+	List<CartItemResponse> getCarts(Authentication authentication) throws UserException, OrderException, MessagingException;
 	
 	CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws ProductException, UserException, ProductDetailException, CartItemException;
 	
@@ -41,7 +43,7 @@ public interface IOrderService {
 	
 	OrderResponse checkoutYourCart(CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException, MessagingException;
 	
-	OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException;
+	OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException, MessagingException;
 	
 	OrderResponse changeDelivery(String typeDelivery, Long orderId) throws OrderException;
 	

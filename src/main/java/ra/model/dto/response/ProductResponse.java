@@ -28,8 +28,6 @@ public class ProductResponse {
 	
 	private double price;
 	
-	private int viewCount;
-	
 	private Category category;
 	
 	private boolean status;

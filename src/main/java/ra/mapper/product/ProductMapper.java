@@ -8,15 +8,10 @@ import ra.model.domain.Category;
 import ra.model.domain.Product;
 import ra.model.dto.request.ProductRequest;
 import ra.model.dto.request.ProductUpdate;
-import ra.model.dto.response.ImageResponse;
 import ra.model.dto.response.ProductResponse;
-import ra.model.dto.response.RateResponse;
-import ra.repository.ICartItemRepository;
 import ra.repository.ICategoryRepository;
-import ra.service.category.CateGoryService;
 
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class ProductMapper implements IGenericMapper<Product, ProductRequest, ProductResponse> {
@@ -30,7 +25,7 @@ public class ProductMapper implements IGenericMapper<Product, ProductRequest, Pr
 				  .productName(productRequest.getProductName())
 				  .description(productRequest.getDescription())
 				  .price(productRequest.getPrice())
-				  .viewCount(productRequest.getViewCount())
+				  .countBuy(productRequest.getCountBuy())
 				  .category(findCategoryById(productRequest.getCategoryId()))
 				  // nhớ thêm chuyển đổi từ multipartFile để cập nhật ảnh
 				  // .images()
@@ -44,7 +39,6 @@ public class ProductMapper implements IGenericMapper<Product, ProductRequest, Pr
 				  .productName(productUpdate.getProductName())
 				  .description(productUpdate.getDescription())
 				  .price(productUpdate.getPrice())
-				  .viewCount(productUpdate.getViewCount())
 				  .category(findCategoryById(productUpdate.getCategoryId()))
 				  .status(productUpdate.isStatus())
 				  .build();
@@ -58,7 +52,6 @@ public class ProductMapper implements IGenericMapper<Product, ProductRequest, Pr
 				  .imageActive(product.getImageActive())
 				  .description(product.getDescription())
 				  .price(product.getPrice())
-				  .viewCount(product.getViewCount())
 				  .category(product.getCategory())
 				  .status(product.isStatus())
 				  .build();

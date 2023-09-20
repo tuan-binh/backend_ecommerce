@@ -41,7 +41,7 @@ public class ProductController {
 	}
 	
 	@PostMapping("/add")
-//	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<ProductResponse> handleAddProduct(@ModelAttribute ProductRequest productRequest) throws ProductException, CategoryException, ImageProductException {
 		return new ResponseEntity<>(productService.save(productRequest), HttpStatus.CREATED);
 	}
@@ -58,8 +58,8 @@ public class ProductController {
 		return new ResponseEntity<>(productService.changeStatus(id), HttpStatus.OK);
 	}
 	
-	@PutMapping("/add_image")
-//	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+	@PostMapping("/add_image")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<List<ImageResponse>> handleAddImageToProduct(@ModelAttribute ImageRequest imageRequest) throws ProductException, ColorException, CouponException, CategoryException, ProductDetailException, OrderException, SizeException, ImageProductException {
 		return new ResponseEntity<>(productService.addImageToProduct(imageRequest), HttpStatus.CREATED);
 	}

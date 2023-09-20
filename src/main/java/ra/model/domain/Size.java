@@ -23,7 +23,7 @@ public class Size {
 	@Column(name = "size_name", nullable = false)
 	private String sizeName;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "size")
+	@OneToMany( fetch = FetchType.LAZY, mappedBy = "size")
 	@JsonIgnore
 	Set<ProductDetail> productDetails = new HashSet<>();
 	

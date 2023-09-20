@@ -29,7 +29,7 @@ public class RateController {
 	}
 	
 	@PostMapping("/add_rate")
-	public ResponseEntity<RateResponse> handleRateProductByUser(@RequestBody RateRequest rateRequest, Authentication authentication) throws UserException, ProductException {
+	public ResponseEntity<RateResponse> handleRateProductByUser(@RequestBody RateRequest rateRequest, Authentication authentication) throws UserException, ProductException, RateException {
 		return new ResponseEntity<>(rateService.rateProductByUser(rateRequest, authentication), HttpStatus.CREATED);
 	}
 	

@@ -14,15 +14,14 @@ public class MailService {
 	@Autowired
 	private JavaMailSender javaMailSender;
 	
-	public void sendHtmlToMail(String to, String cc, String subject, String html) throws MessagingException {
-		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+	public void sendHtmlToMail(String to, String subject, String html) throws MessagingException {
+		MimeMessage message = javaMailSender.createMimeMessage();
 		
-		MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-		mimeMessageHelper.setTo(to);
-		mimeMessageHelper.addCc(cc);
-		mimeMessageHelper.setSubject(subject);
-		mimeMessageHelper.setText(html);
-		javaMailSender.send(mimeMessage);
+		message.setSubject(subject);
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
+		helper.setTo(to);
+		helper.setText(html, true);
+		javaMailSender.send(message);
 	}
 	
 }

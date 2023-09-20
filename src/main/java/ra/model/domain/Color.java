@@ -23,7 +23,7 @@ public class Color {
 	@Column(name = "color_name", nullable = false)
 	private String colorName;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "color")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "color")
 	@JsonIgnore
 	Set<ProductDetail> productDetailSet = new HashSet<>();
 	

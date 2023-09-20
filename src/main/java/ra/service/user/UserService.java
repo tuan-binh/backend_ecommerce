@@ -19,6 +19,7 @@ import ra.mapper.user.UserMapper;
 import ra.model.domain.ERole;
 import ra.model.domain.Roles;
 import ra.model.domain.Users;
+import ra.model.dto.request.ChangePassword;
 import ra.model.dto.request.UserLogin;
 import ra.model.dto.request.UserRegister;
 import ra.model.dto.request.UserUpdate;
@@ -170,13 +171,18 @@ public class UserService implements IUserService {
 	}
 	
 	@Override
-	public UserResponse changePassword(String password, Authentication authentication) throws UserException {
-		if (password.trim().isEmpty()) {
+	public UserResponse changePassword(ChangePassword changePassword, Authentication authentication) throws UserException {
+		if (changePassword.getPassword().trim().isEmpty()) {
 			throw new UserException("you does not blank");
 		}
 		Users users = findUserByAuthentication(authentication);
-		users.setPassword(passwordEncoder.encode(password));
+		users.setPassword(passwordEncoder.encode(changePassword.getPassword()));
 		return userMapper.toResponse(userRepository.save(users));
+	}
+	
+	@Override
+	public String handleStatistical() {
+		return null;
 	}
 	
 	public Users findUserByAuthentication(Authentication authentication) throws UserException {

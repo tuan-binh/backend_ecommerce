@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 import ra.exception.RoleException;
 import ra.exception.UserException;
 import ra.model.domain.Users;
+import ra.model.dto.request.ChangePassword;
 import ra.model.dto.request.UserLogin;
 import ra.model.dto.request.UserRegister;
 import ra.model.dto.request.UserUpdate;
@@ -30,6 +31,8 @@ public interface IUserService {
 	
 	UserResponse updateYourInfo(UserUpdate userUpdate, Authentication authentication) throws UserException;
 	
-	UserResponse changePassword(String password, Authentication authentication) throws UserException;
+	UserResponse changePassword(ChangePassword changePassword, Authentication authentication) throws UserException;
+	
+	String handleStatistical();
 	
 }

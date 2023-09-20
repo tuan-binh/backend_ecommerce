@@ -28,23 +28,28 @@ public class OrderController {
 		return new ResponseEntity<>(orderService.getOrders(authentication), HttpStatus.OK);
 	}
 	
+	@GetMapping("/get_order/{orderId}")
+	public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long orderId, Authentication authentication) throws OrderException {
+		return new ResponseEntity<>(orderService.getOrderById(orderId, authentication), HttpStatus.OK);
+	}
+	
 	@GetMapping("/get_cart")
-	public ResponseEntity<List<CartItemResponse>> getCarts(Authentication authentication) throws UserException, OrderException {
+	public ResponseEntity<List<CartItemResponse>> getCarts(Authentication authentication) throws UserException, OrderException, MessagingException {
 		return new ResponseEntity<>(orderService.getCarts(authentication), HttpStatus.OK);
 	}
 	
-	@GetMapping("/buy/{productDetailId}")
+	@PostMapping("/buy/{productDetailId}")
 	public ResponseEntity<CartItemResponse> addProductToOrders(@PathVariable Long productDetailId, Authentication authentication) throws UserException, ProductException, ProductDetailException, CartItemException {
 		return new ResponseEntity<>(orderService.addProductToOrder(productDetailId, authentication), HttpStatus.CREATED);
 	}
 	
-	@GetMapping("/plus/{orderDetailId}")
+	@PutMapping("/plus/{orderDetailId}")
 	public ResponseEntity<CartItemResponse> plusOrderDetail(@PathVariable Long orderDetailId, Authentication authentication) throws CartItemException, OrderException, UserException {
 		return new ResponseEntity<>(orderService.plusOrderDetail(orderDetailId, authentication), HttpStatus.OK);
 	}
 	
-	@GetMapping("/minus/{orderDetailId}")
-	public ResponseEntity<CartItemResponse> minusOrderDetail(@PathVariable Long orderDetailId, Authentication authentication) throws CartItemException, UserException, OrderException {
+	@PutMapping("/minus/{orderDetailId}")
+	public ResponseEntity<CartItemResponse> minusOrderDetail(@PathVariable Long orderDetailId, Authentication authentication) throws CartItemException, OrderException {
 		return new ResponseEntity<>(orderService.minusOrderDetail(orderDetailId, authentication), HttpStatus.OK);
 	}
 	
@@ -63,8 +68,8 @@ public class OrderController {
 		return new ResponseEntity<>(orderService.checkoutYourCart(checkoutRequest, authentication), HttpStatus.OK);
 	}
 	
-	@GetMapping("/cancel_order/{orderId}")
-	public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Long orderId, Authentication authentication) throws UserException, OrderException {
+	@PutMapping("/cancel_order/{orderId}")
+	public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Long orderId, Authentication authentication) throws UserException, OrderException, MessagingException {
 		return new ResponseEntity<>(orderService.cancelOrder(orderId, authentication), HttpStatus.OK);
 	}
 	

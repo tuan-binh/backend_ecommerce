@@ -10,17 +10,17 @@ import ra.exception.ProductException;
 import ra.exception.RateException;
 import ra.exception.UserException;
 import ra.mapper.rate.RateMapper;
-import ra.model.domain.Product;
-import ra.model.domain.Rates;
-import ra.model.domain.Users;
+import ra.model.domain.*;
 import ra.model.dto.request.RateRequest;
 import ra.model.dto.response.RateResponse;
+import ra.repository.IOrderRepository;
 import ra.repository.IProductRepository;
 import ra.repository.IRateRepository;
 import ra.repository.IUserRepository;
 import ra.security.user_principle.UserPrinciple;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,6 +33,8 @@ public class RateService implements IRateService {
 	private IUserRepository userRepository;
 	@Autowired
 	private IProductRepository productRepository;
+	@Autowired
+	private IOrderRepository orderRepository;
 	@Autowired
 	private RateMapper rateMapper;
 	
@@ -78,12 +80,17 @@ public class RateService implements IRateService {
 	}
 	
 	@Override
-	public RateResponse rateProductByUser(RateRequest rateRequest, Authentication authentication) throws ProductException, UserException {
+	public RateResponse rateProductByUser(RateRequest rateRequest, Authentication authentication) throws ProductException, UserException, RateException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		Users users = findUserByUserName(userPrinciple.getEmail());
+		List<Orders> orders = orderRepository.findAllByUsersIdAndStatus(userPrinciple.getId(), true);
 		Rates rates = rateMapper.toEntity(rateRequest);
-		rates.setUsers(users);
-		return rateMapper.toResponse(rateRepository.save(rates));
+		boolean check = checkBooleanProduct(orders, rates.getProduct().getId());
+		if(check) {
+			rates.setUsers(users);
+			return rateMapper.toResponse(rateRepository.save(rates));
+		}
+		throw new RateException("You have not purchased this product yet");
 	}
 	
 	@Override
@@ -104,6 +111,19 @@ public class RateService implements IRateService {
 			return rateMapper.toResponse(optionalRates.get());
 		}
 		throw new RateException("rate not found");
+	}
+	
+	public boolean checkBooleanProduct(List<Orders> orders, Long productId) {
+		for (Orders o : orders) {
+			if (!o.getEDelivered().equals(EDelivered.CANCEL)) {
+				for (CartItem c : o.getList()) {
+					if (Objects.equals(c.getProductDetail().getProduct().getId(), productId)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
 	public Rates findRatesById(Long id) throws RateException {

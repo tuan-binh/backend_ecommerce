@@ -23,7 +23,7 @@ public interface IRateService {
 	
 	RateResponse changeStatus(Long id) throws RateException;
 	
-	RateResponse rateProductByUser(RateRequest rateRequest, Authentication authentication) throws ProductException, UserException;
+	RateResponse rateProductByUser(RateRequest rateRequest, Authentication authentication) throws ProductException, UserException, RateException;
 	
 	RateResponse updateRateInProduct(RateRequest rateRequest,Long rateId, Authentication authentication) throws RateException, ProductException, UserException;
 	

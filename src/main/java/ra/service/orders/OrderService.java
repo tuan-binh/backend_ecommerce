@@ -19,6 +19,8 @@ import ra.security.user_principle.UserPrinciple;
 import ra.service.mail.MailService;
 
 import javax.mail.MessagingException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -108,6 +110,7 @@ public class OrderService implements IOrderService {
 			if (type.toString().equals("PENDING") || type.toString().equals("PREPARE") || type.toString().equals("DELIVERY") || type.toString().equals("SUCCESS")) {
 				throw new OrderException("You are in the order cancellation status");
 			}
+			returnStockInProduct(orders.getList());
 			orders.setEDelivered(type);
 		}
 		return orderMapper.toResponse(orderRepository.save(orders));
@@ -122,7 +125,14 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public List<CartItemResponse> getCarts(Authentication authentication) throws OrderException {
+	public OrderResponse getOrderById(Long orderId, Authentication authentication) throws OrderException {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Optional<Orders> orders = orderRepository.findByIdAndUsersId(orderId, userPrinciple.getId());
+		return orders.map(value -> orderMapper.toResponse(value)).orElseThrow(() -> new OrderException("order not found"));
+	}
+	
+	@Override
+	public List<CartItemResponse> getCarts(Authentication authentication) throws OrderException, MessagingException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
 		if (orders.isPresent()) {
@@ -245,6 +255,9 @@ public class OrderService implements IOrderService {
 			throw new UserException("you must be update your info");
 		}
 		if (orders.isPresent()) {
+			if (orders.get().getList().isEmpty()) {
+				throw new OrderException("your cart is empty");
+			}
 			for (CartItem c : orders.get().getList()) {
 				c.setPrice(c.getProductDetail().getProduct().getPrice());
 			}
@@ -267,30 +280,76 @@ public class OrderService implements IOrderService {
 				orders.get().setTotal(orders.get().getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
 			}
 			if (coupon != null) {
-				orders.get().setCoupon(coupon);
-				orders.get().setTotal(orders.get().getTotal() - (orders.get().getTotal() * coupon.getPercent()));
+				boolean check = checkDateInCoupon(coupon);
+				if (check) {
+					orders.get().setCoupon(coupon);
+					orders.get().setTotal(orders.get().getTotal() - (orders.get().getTotal() * coupon.getPercent()));
+					coupon.setStock(coupon.getStock() - 1);
+					couponRepository.save(coupon);
+				} else {
+					throw new CouponException("Discount code has expired");
+				}
 			}
 			// thực hiện trừ stock ở trong product detail
 			minusStockInProduct(orders.get().getList());
-			mailService.sendHtmlToMail(userPrinciple.getEmail(),null,"Thông báo đơn hàng của bạn","");
+			mailService.sendHtmlToMail(userPrinciple.getEmail(), "Thông báo đơn hàng của bạn", "<div style=\"border:2px solid #000; display:inline-block; padding: 20px\">\n" +
+					  "<h1>Đơn hàng của bạn</h1>\n" +
+					  "<h3>Full Name: " + userPrinciple.getFullName() + "</h3>\n" +
+					  "<h3>Email: " + userPrinciple.getEmail() + "</h3>\n" +
+					  "<h3>Address: " + orders.get().getLocation() + "</h3>\n" +
+					  "<h3>Phone: " + orders.get().getPhone() + "</h3>\n" +
+					  "<h3>Total: " + orders.get().getTotal() + "</h3>\n" +
+					  "<h3>Time: " + orders.get().getDeliveryTime() + "</h3>\n" +
+					  "<h3>Trạng thái: Chuẩn bị hàng</h3>\n" +
+					  "</div>\n");
 			return orderMapper.toResponse(orderRepository.save(orders.get()));
 		}
 		throw new OrderException("your cart is empty");
 	}
 	
 	@Override
-	public OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException {
+	public OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException, MessagingException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		Optional<Orders> orders = orderRepository.findByIdAndUsersId(orderId, userPrinciple.getId());
 		if (orders.isPresent()) {
 			orders.get().setDeliveryTime(new Date());
+			mailService.sendHtmlToMail(userPrinciple.getEmail(), "Thông báo đơn hàng của bạn", "<div style=\"border:2px solid #000; display:inline-block; padding: 20px\">\n" +
+					  "<h1>Đơn hàng của bạn</h1>\n" +
+					  "<h3>Full Name: " + userPrinciple.getFullName() + "</h3>\n" +
+					  "<h3>Email: " + userPrinciple.getEmail() + "</h3>\n" +
+					  "<h3>Address: " + orders.get().getLocation() + "</h3>\n" +
+					  "<h3>Phone: " + orders.get().getPhone() + "</h3>\n" +
+					  "<h3>Total: " + orders.get().getTotal() + "</h3>\n" +
+					  "<h3>Time: " + orders.get().getDeliveryTime() + "</h3>\n" +
+					  "<h3>Trạng thái: Đã Hủy</h3>\n" +
+					  "</div>\n");
+			returnStockInProduct(orders.get().getList());
 			return changeDelivery("cancel", orderId);
 		}
 		throw new UserException("Un permission");
 	}
 	
-	public void minusStockInProduct(List<CartItem> cartItems) {
+	public boolean checkDateInCoupon(Coupon coupon) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate startDateCoupon = LocalDate.parse(coupon.getStartDate().toString(), formatter);
+		LocalDate endDateCoupon = LocalDate.parse(coupon.getEndDate().toString(), formatter);
+		LocalDate timeNow = LocalDate.parse(new Date().toString(), formatter);
+		return !timeNow.isAfter(endDateCoupon) && !timeNow.isBefore(startDateCoupon);
+	}
+	
+	public void returnStockInProduct(List<CartItem> cartItems) {
 		for (CartItem c : cartItems) {
+			c.getProductDetail().setStock(c.getProductDetail().getStock() + c.getQuantity());
+			productDetailRepository.save(c.getProductDetail());
+		}
+	}
+	
+	public void minusStockInProduct(List<CartItem> cartItems) throws OrderException {
+		for (CartItem c : cartItems) {
+			if (c.getQuantity() > c.getProductDetail().getStock()) {
+				throw new OrderException("i don't have enough");
+			}
+			c.getProductDetail().getProduct().setCountBuy(c.getQuantity());
 			c.getProductDetail().setStock(c.getProductDetail().getStock() - c.getQuantity());
 			productDetailRepository.save(c.getProductDetail());
 		}
@@ -305,7 +364,6 @@ public class OrderService implements IOrderService {
 		Optional<ProductDetail> optionalProductDetail = productDetailRepository.findById(productDetailId);
 		return optionalProductDetail.orElseThrow(() -> new ProductDetailException("product detail not found"));
 	}
-	
 	
 	public Orders findOrderById(Long id) throws OrderException {
 		Optional<Orders> optionalOrders = orderRepository.findById(id);
