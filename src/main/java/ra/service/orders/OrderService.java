@@ -83,9 +83,10 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
-	public OrderResponse changeDelivery(String typeDelivery, Long id) throws OrderException {
+	public OrderResponse changeDelivery(String typeDelivery, Long id) throws OrderException, MessagingException {
 		EDelivered type = findDeliveryByInput(typeDelivery);
 		Orders orders = findOrderById(id);
+		Users users = orders.getUsers();
 		if (orders.getEDelivered().toString().equals("PENDING")) {
 			if (type.toString().equals("DELIVERY") || type.toString().equals("SUCCESS")) {
 				throw new OrderException("You are in the status of waiting for confirmation");
@@ -112,6 +113,42 @@ public class OrderService implements IOrderService {
 			}
 			returnStockInProduct(orders.getList());
 			orders.setEDelivered(type);
+		}
+		if (type.equals(EDelivered.DELIVERY)) {
+			mailService.sendHtmlToMail(users.getEmail(), "Thông báo đơn hàng của bạn", "<div style=\"border:2px solid #000; display:inline-block; padding: 20px\">\n" +
+					  "<h1>Đơn hàng của bạn</h1>\n" +
+					  "<h3>Full Name: " + users.getFullName() + "</h3>\n" +
+					  "<h3>Email: " + users.getEmail() + "</h3>\n" +
+					  "<h3>Address: " + orders.getLocation() + "</h3>\n" +
+					  "<h3>Phone: " + orders.getPhone() + "</h3>\n" +
+					  "<h3>Total: " + orders.getTotal() + "</h3>\n" +
+					  "<h3>Time: " + orders.getDeliveryTime() + "</h3>\n" +
+					  "<h3>Trạng thái: Đang giao hàng </h3>\n" +
+					  "</div>\n");
+		}
+		if (type.equals(EDelivered.SUCCESS)) {
+			mailService.sendHtmlToMail(users.getEmail(), "Thông báo đơn hàng của bạn", "<div style=\"border:2px solid #000; display:inline-block; padding: 20px\">\n" +
+					  "<h1>Đơn hàng của bạn</h1>\n" +
+					  "<h3>Full Name: " + users.getFullName() + "</h3>\n" +
+					  "<h3>Email: " + users.getEmail() + "</h3>\n" +
+					  "<h3>Address: " + orders.getLocation() + "</h3>\n" +
+					  "<h3>Phone: " + orders.getPhone() + "</h3>\n" +
+					  "<h3>Total: " + orders.getTotal() + "</h3>\n" +
+					  "<h3>Time: " + orders.getDeliveryTime() + "</h3>\n" +
+					  "<h3>Trạng thái: Giao hàng thành công </h3>\n" +
+					  "</div>\n");
+		}
+		if (type.equals(EDelivered.CANCEL)) {
+			mailService.sendHtmlToMail(users.getEmail(), "Thông báo đơn hàng của bạn", "<div style=\"border:2px solid #000; display:inline-block; padding: 20px\">\n" +
+					  "<h1>Đơn hàng của bạn</h1>\n" +
+					  "<h3>Full Name: " + users.getFullName() + "</h3>\n" +
+					  "<h3>Email: " + users.getEmail() + "</h3>\n" +
+					  "<h3>Address: " + orders.getLocation() + "</h3>\n" +
+					  "<h3>Phone: " + orders.getPhone() + "</h3>\n" +
+					  "<h3>Total: " + orders.getTotal() + "</h3>\n" +
+					  "<h3>Time: " + orders.getDeliveryTime() + "</h3>\n" +
+					  "<h3>Trạng thái: Đã hủy </h3>\n" +
+					  "</div>\n");
 		}
 		return orderMapper.toResponse(orderRepository.save(orders));
 	}

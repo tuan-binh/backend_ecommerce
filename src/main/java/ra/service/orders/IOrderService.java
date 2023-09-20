@@ -45,6 +45,6 @@ public interface IOrderService {
 	
 	OrderResponse cancelOrder(Long orderId, Authentication authentication) throws OrderException, UserException, MessagingException;
 	
-	OrderResponse changeDelivery(String typeDelivery, Long orderId) throws OrderException;
+	OrderResponse changeDelivery(String typeDelivery, Long orderId) throws OrderException, MessagingException;
 	
 }
