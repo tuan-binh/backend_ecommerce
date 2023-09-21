@@ -21,7 +21,5 @@ public class RateRequest {
 	@NotEmpty(message = "content not empty")
 	private String content;
 	
-	@NotNull(message = "productId not null")
-	private Long productId;
 	
 }

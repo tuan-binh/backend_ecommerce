@@ -5,9 +5,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ra.model.domain.Users;
 import ra.model.dto.response.CountOrderByUser;
+import ra.model.dto.response.RevenueByMonth;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +26,7 @@ public interface IUserRepository extends JpaRepository<Users, Long> {
 	Page<Users> findAllByFullNameContaining(Pageable pageable, String fullName);
 	
 	@Modifying
-	@Query("SELECT new ra.model.dto.response.CountOrderByUser(u.fullName,COUNT(o.id)) " +
+	@Query("SELECT new ra.model.dto.response.CountOrderByUser(u.fullName,u.email,COUNT(o.id)) " +
 			  "FROM Users u JOIN u.orders o " +
 			  "WHERE o.status = true " +
 			  "GROUP BY u.id " +

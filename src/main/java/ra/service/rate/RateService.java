@@ -86,11 +86,15 @@ public class RateService implements IRateService {
 		Users users = findUserByUserName(userPrinciple.getEmail());
 		List<Orders> orders = orderRepository.findAllByUsersIdAndStatus(userPrinciple.getId(), true);
 		Rates rates = rateMapper.toEntity(rateRequest);
+		rates.setProduct(product);
 		boolean check = checkBooleanProduct(orders, productId);
 		boolean checkRateUserInProduct = checkRateUserInProduct(product.getRates(), userPrinciple.getId());
-		if (check && checkRateUserInProduct) {
-			rates.setUsers(users);
-			return rateMapper.toResponse(rateRepository.save(rates));
+		if (check) {
+			if(checkRateUserInProduct) {
+				rates.setUsers(users);
+				return rateMapper.toResponse(rateRepository.save(rates));
+			}
+			throw new RateException("You have already rated this product");
 		}
 		throw new RateException("You have not purchased this product yet");
 	}

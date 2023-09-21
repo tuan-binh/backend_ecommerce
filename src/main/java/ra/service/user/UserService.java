@@ -187,8 +187,8 @@ public class UserService implements IUserService {
 	
 	@Override
 	public UserResponse updateYourInfo(UserUpdate userUpdate, Authentication authentication) throws UserException {
-		if (userUpdate.getPhone().trim().isEmpty() || userUpdate.getAddress().trim().isEmpty()) {
-			throw new UserException("you must be update full your information");
+		if (userRepository.existsByPhone(userUpdate.getPhone())) {
+			throw new UserException("exists your phone");
 		}
 		Users users = findUserByAuthentication(authentication);
 		users.setPhone(userUpdate.getPhone());
@@ -214,7 +214,7 @@ public class UserService implements IUserService {
 		for (int i = 0; i < 5; i++) {
 			try {
 				list.add(myList.get(i));
-			} catch (Exception e) {
+			} catch (Exception ignored) {
 			
 			}
 		}
@@ -243,7 +243,6 @@ public class UserService implements IUserService {
 					  .revenue(sum)
 					  .build());
 		}
-		
 		return list;
 	}
 	
@@ -262,12 +261,6 @@ public class UserService implements IUserService {
 			password += (Math.round(Math.random() * 10));
 		}
 		return password;
-	}
-	
-	public List<Long> getAllIdUser() {
-		List<Long> list = new ArrayList<>();
-		userRepository.findAll().forEach(item -> list.add(item.getId()));
-		return list;
 	}
 	
 	public Users findUserByAuthentication(Authentication authentication) throws UserException {

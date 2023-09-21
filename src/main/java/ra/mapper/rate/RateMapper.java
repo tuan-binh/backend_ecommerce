@@ -23,7 +23,6 @@ public class RateMapper implements IGenericMapper<Rates, RateRequest, RateRespon
 		return Rates.builder()
 				  .rating(rateRequest.getRating())
 				  .content(rateRequest.getContent())
-				  .product(findProductById(rateRequest.getProductId()))
 				  .build();
 	}
 	

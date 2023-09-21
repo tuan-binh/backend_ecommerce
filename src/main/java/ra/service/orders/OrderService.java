@@ -32,6 +32,8 @@ public class OrderService implements IOrderService {
 	@Autowired
 	private IOrderRepository orderRepository;
 	@Autowired
+	private IProductRepository productRepository;
+	@Autowired
 	private ICartItemRepository cartItemRepository;
 	@Autowired
 	private OrderMapper orderMapper;
@@ -89,27 +91,29 @@ public class OrderService implements IOrderService {
 		Users users = orders.getUsers();
 		if (orders.getEDelivered().toString().equals("PENDING")) {
 			if (type.toString().equals("DELIVERY") || type.toString().equals("SUCCESS")) {
-				throw new OrderException("You are in the status of waiting for confirmation");
+				throw new OrderException("Your order is in status PENDING cannot switch to state " + type);
 			}
 			orders.setEDelivered(type);
 		} else if (orders.getEDelivered().toString().equals("PREPARE")) {
 			if (type.toString().equals("PENDING") || type.toString().equals("SUCCESS")) {
-				throw new OrderException("You are in preparation mode");
+				throw new OrderException("Your order is in status PREPARE cannot switch to state " + type);
 			}
 			orders.setEDelivered(type);
 		} else if (orders.getEDelivered().toString().equals("DELIVERY")) {
-			if (type.toString().equals("PENDING") || type.toString().equals("PREPARE")) {
-				throw new OrderException("You are in the delivery status");
+			if (type.toString().equals("PENDING") || type.toString().equals("PREPARE") || type.toString().equals("CANCEL")) {
+				throw new OrderException("Your order is in status DELIVERY cannot switch to state " + type);
 			}
 			orders.setEDelivered(type);
 		} else if (orders.getEDelivered().toString().equals("SUCCESS")) {
-			if (type.toString().equals("PENDING") || type.toString().equals("PREPARE") || type.toString().equals("DELIVERY")) {
-				throw new OrderException("You are in the successful delivery status");
+			if (type.toString().equals("PENDING") || type.toString().equals("PREPARE") || type.toString().equals("DELIVERY") || type.toString().equals("CANCEL")) {
+				throw new OrderException("Your order is in status SUCCESS cannot switch to state " + type);
 			}
 			orders.setEDelivered(type);
+			// thực hiện thêm số lượng đã mua vào database
+			uptoCountByInProduct(orders);
 		} else {
 			if (type.toString().equals("PENDING") || type.toString().equals("PREPARE") || type.toString().equals("DELIVERY") || type.toString().equals("SUCCESS")) {
-				throw new OrderException("You are in the order cancellation status");
+				throw new OrderException("Your order is in status CANCEL cannot switch to state " + type);
 			}
 			returnStockInProduct(orders.getList());
 			orders.setEDelivered(type);
@@ -298,33 +302,34 @@ public class OrderService implements IOrderService {
 	public OrderResponse checkoutYourCart(CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException, MessagingException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
-		if (userPrinciple.getAddress() == null || userPrinciple.getPhone() == null) {
-			throw new UserException("you must be update your info");
-		}
 		if (orders.isPresent()) {
-			if (orders.get().getList().isEmpty()) {
+			Orders newOrder = orders.get();
+			if (newOrder.getList().isEmpty()) {
 				throw new OrderException("your cart is empty");
 			}
-			for (CartItem c : orders.get().getList()) {
+			for (CartItem c : newOrder.getList()) {
 				c.setPrice(c.getProductDetail().getProduct().getPrice());
 			}
-			orders.get().setDeliveryTime(new Date());
-			orders.get().setStatus(true);
-			orders.get().setEDelivered(EDelivered.PREPARE);
+			newOrder.setDeliveryTime(new Date());
+			newOrder.setStatus(true);
+			newOrder.setEDelivered(EDelivered.PREPARE);
 			Coupon coupon = null;
 			if (checkoutRequest.getCouponId() != null) {
 				coupon = findCouponById(checkoutRequest.getCouponId());
 			}
 			if (checkoutRequest.getAddress() == null || checkoutRequest.getPhone() == null) {
+				if (userPrinciple.getAddress() == null || userPrinciple.getPhone() == null) {
+					throw new UserException("you must be update your info");
+				}
 				// check out with my information
-				orders.get().setLocation(userPrinciple.getAddress());
-				orders.get().setPhone(userPrinciple.getPhone());
-				orders.get().setTotal(orders.get().getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
+				newOrder.setLocation(userPrinciple.getAddress());
+				newOrder.setPhone(userPrinciple.getPhone());
+				newOrder.setTotal(newOrder.getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
 			} else {
 				// check out with other address or other phone
-				orders.get().setLocation(checkoutRequest.getAddress());
-				orders.get().setPhone(checkoutRequest.getPhone());
-				orders.get().setTotal(orders.get().getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
+				newOrder.setLocation(checkoutRequest.getAddress());
+				newOrder.setPhone(checkoutRequest.getPhone());
+				newOrder.setTotal(newOrder.getList().stream().map(item -> item.getPrice() * item.getQuantity()).reduce((double) 0, Double::sum));
 			}
 			if (coupon != null) {
 				boolean check = checkDateInCoupon(coupon);
@@ -335,7 +340,7 @@ public class OrderService implements IOrderService {
 						throw new CouponException("i don't have this coupon");
 					}
 					orders.get().setCoupon(coupon);
-					orders.get().setTotal(orders.get().getTotal() - (orders.get().getTotal() * coupon.getPercent()));
+					orders.get().setTotal(newOrder.getTotal() - (newOrder.getTotal() * coupon.getPercent()));
 					coupon.setStock(coupon.getStock() - 1);
 					couponRepository.save(coupon);
 				} else {
@@ -343,18 +348,18 @@ public class OrderService implements IOrderService {
 				}
 			}
 			// thực hiện trừ stock ở trong product detail
-			minusStockInProduct(orders.get().getList());
+			minusStockInProduct(newOrder.getList());
 			mailService.sendHtmlToMail(userPrinciple.getEmail(), "Thông báo đơn hàng của bạn", "<div style=\"border:2px solid #000; display:inline-block; padding: 20px\">\n" +
 					  "<h1>Đơn hàng của bạn</h1>\n" +
 					  "<h3>Full Name: " + userPrinciple.getFullName() + "</h3>\n" +
 					  "<h3>Email: " + userPrinciple.getEmail() + "</h3>\n" +
-					  "<h3>Address: " + orders.get().getLocation() + "</h3>\n" +
-					  "<h3>Phone: " + orders.get().getPhone() + "</h3>\n" +
-					  "<h3>Total: " + orders.get().getTotal() + "</h3>\n" +
-					  "<h3>Time: " + orders.get().getDeliveryTime() + "</h3>\n" +
+					  "<h3>Address: " + newOrder.getLocation() + "</h3>\n" +
+					  "<h3>Phone: " + newOrder.getPhone() + "</h3>\n" +
+					  "<h3>Total: " + newOrder.getTotal() + "</h3>\n" +
+					  "<h3>Time: " + newOrder.getDeliveryTime() + "</h3>\n" +
 					  "<h3>Trạng thái: Chuẩn bị hàng</h3>\n" +
 					  "</div>\n");
-			return orderMapper.toResponse(orderRepository.save(orders.get()));
+			return orderMapper.toResponse(orderRepository.save(newOrder));
 		}
 		throw new OrderException("your cart is empty");
 	}
@@ -381,6 +386,14 @@ public class OrderService implements IOrderService {
 		throw new UserException("Un permission");
 	}
 	
+	public void uptoCountByInProduct(Orders orders) {
+		for (CartItem c : orders.getList()) {
+			c.getProductDetail().getProduct().setCountBuy(c.getProductDetail().getProduct().getCountBuy() + c.getQuantity());
+			productRepository.save(c.getProductDetail().getProduct());
+		}
+	}
+	
+	
 	public boolean checkDateInCoupon(Coupon coupon) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		LocalDate startDateCoupon = LocalDate.parse(coupon.getStartDate().toString(), formatter);
@@ -401,7 +414,6 @@ public class OrderService implements IOrderService {
 			if (c.getQuantity() > c.getProductDetail().getStock()) {
 				throw new OrderException("i don't have enough");
 			}
-			c.getProductDetail().getProduct().setCountBuy(c.getQuantity());
 			c.getProductDetail().setStock(c.getProductDetail().getStock() - c.getQuantity());
 			productDetailRepository.save(c.getProductDetail());
 		}
