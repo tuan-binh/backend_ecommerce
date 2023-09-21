@@ -31,7 +31,7 @@ public class AdminController {
 	}
 	
 	@GetMapping("/statistical/revenue_month")
-	public ResponseEntity<List<RevenueByMonth>> getStatisticalRevenue(@RequestParam(value = "year", defaultValue = "") String year) {
+	public ResponseEntity<List<RevenueByMonth>> getStatisticalRevenue(@RequestParam(value = "year", defaultValue = "2023") String year) {
 		return new ResponseEntity<>(userService.getStatisticalRevenue(year), HttpStatus.OK);
 	}
 	

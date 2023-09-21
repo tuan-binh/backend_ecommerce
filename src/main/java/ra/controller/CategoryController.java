@@ -13,6 +13,7 @@ import ra.model.dto.request.CategoryRequest;
 import ra.model.dto.response.CategoryResponse;
 import ra.service.category.ICategoryService;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
@@ -35,13 +36,13 @@ public class CategoryController {
 	
 	@PostMapping("/add")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<CategoryResponse> handleAddCategory(@RequestBody CategoryRequest categoryRequest) throws CategoryException {
+	public ResponseEntity<CategoryResponse> handleAddCategory(@RequestBody @Valid CategoryRequest categoryRequest) throws CategoryException {
 		return new ResponseEntity<>(categoryService.save(categoryRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<CategoryResponse> handleUpdateCategory(@RequestBody CategoryRequest categoryRequest, @PathVariable Long id) {
+	public ResponseEntity<CategoryResponse> handleUpdateCategory(@RequestBody @Valid CategoryRequest categoryRequest, @PathVariable Long id) {
 		return new ResponseEntity<>(categoryService.update(categoryRequest, id), HttpStatus.OK);
 	}
 	

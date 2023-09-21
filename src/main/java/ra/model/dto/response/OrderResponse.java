@@ -5,9 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ra.model.domain.Coupon;
-import ra.model.domain.Users;
 
 import java.util.Date;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,5 +21,6 @@ public class OrderResponse {
 	private String phone;
 	private double total;
 	private Coupon coupon;
+	private List<CartItemResponse> carts;
 	private boolean status;
 }

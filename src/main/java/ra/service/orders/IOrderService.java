@@ -29,6 +29,8 @@ public interface IOrderService {
 	
 	OrderResponse getOrderById(Long orderId, Authentication authentication) throws OrderException;
 	
+	List<CartItemResponse> getCartInOrder(Long orderId, Authentication authentication) throws OrderException;
+	
 	List<CartItemResponse> getCarts(Authentication authentication) throws UserException, OrderException, MessagingException;
 	
 	CartItemResponse addProductToOrder(Long productDetailId, Authentication authentication) throws ProductException, UserException, ProductDetailException, CartItemException;

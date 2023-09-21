@@ -13,6 +13,7 @@ import ra.model.dto.request.SizeRequest;
 import ra.model.dto.response.SizeResponse;
 import ra.service.size.ISizeService;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
@@ -35,13 +36,13 @@ public class SizeController {
 	
 	@PostMapping("/add")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<SizeResponse> handleAddSize(@RequestBody SizeRequest sizeRequest) throws SizeException {
+	public ResponseEntity<SizeResponse> handleAddSize(@RequestBody @Valid SizeRequest sizeRequest) throws SizeException {
 		return new ResponseEntity<>(sizeService.save(sizeRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<SizeResponse> handleUpdateSize(@RequestBody SizeRequest sizeRequest, @PathVariable Long id) {
+	public ResponseEntity<SizeResponse> handleUpdateSize(@RequestBody @Valid SizeRequest sizeRequest, @PathVariable Long id) {
 		return new ResponseEntity<>(sizeService.update(sizeRequest, id), HttpStatus.OK);
 	}
 	

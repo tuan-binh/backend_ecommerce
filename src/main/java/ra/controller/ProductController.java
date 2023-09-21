@@ -16,6 +16,7 @@ import ra.model.dto.response.ImageResponse;
 import ra.model.dto.response.ProductResponse;
 import ra.service.product.IProductService;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,13 +42,13 @@ public class ProductController {
 	
 	@PostMapping("/add")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<ProductResponse> handleAddProduct(@ModelAttribute ProductRequest productRequest) throws ProductException, CategoryException, ImageProductException {
+	public ResponseEntity<ProductResponse> handleAddProduct(@ModelAttribute @Valid ProductRequest productRequest) throws ProductException, CategoryException, ImageProductException {
 		return new ResponseEntity<>(productService.save(productRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<ProductResponse> handleUpdateProduct(@RequestBody ProductUpdate productUpdate, @PathVariable Long id) throws CategoryException {
+	public ResponseEntity<ProductResponse> handleUpdateProduct(@RequestBody @Valid ProductUpdate productUpdate, @PathVariable Long id) throws CategoryException {
 		return new ResponseEntity<>(productService.update(productUpdate, id), HttpStatus.OK);
 	}
 	
@@ -56,15 +57,20 @@ public class ProductController {
 	public ResponseEntity<ProductResponse> handleChangeStatusProduct(@PathVariable Long id) throws ProductException {
 		return new ResponseEntity<>(productService.changeStatus(id), HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/change_avatar/{imageId}/in/{productId}")
 	public ResponseEntity<ImageResponse> handleChangeImageAvatar(@PathVariable Long imageId, @PathVariable Long productId) throws ImageProductException, ProductException {
 		return new ResponseEntity<>(productService.changeImageAvatar(imageId, productId), HttpStatus.OK);
 	}
 	
+	@GetMapping("/get_image/{productId}")
+	public ResponseEntity<List<ImageResponse>> getImageByProductId(@PathVariable Long productId) {
+		return new ResponseEntity<>(productService.getImageByProductId(productId), HttpStatus.OK);
+	}
+	
 	@PostMapping("/add_image")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<List<ImageResponse>> handleAddImageToProduct(@ModelAttribute ImageRequest imageRequest) throws ProductException, ColorException, CouponException, CategoryException, ProductDetailException, OrderException, SizeException, ImageProductException {
+	public ResponseEntity<List<ImageResponse>> handleAddImageToProduct(@ModelAttribute @Valid ImageRequest imageRequest) throws ProductException, ColorException, CouponException, CategoryException, ProductDetailException, OrderException, SizeException, ImageProductException {
 		return new ResponseEntity<>(productService.addImageToProduct(imageRequest), HttpStatus.CREATED);
 	}
 	
@@ -74,16 +80,16 @@ public class ProductController {
 		return new ResponseEntity<>(productService.deleteImageInProduct(idImage), HttpStatus.OK);
 	}
 	
-	@PostMapping("/add_category/{categoryId}/to/{productId}")
-	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<ProductResponse> handleAddCategoryToProduct(@PathVariable Long categoryId, @PathVariable Long productId) throws CategoryException, ProductException {
-		return new ResponseEntity<>(productService.addCategoryToProduct(categoryId, productId), HttpStatus.CREATED);
-	}
-	
-	@DeleteMapping("/remove_category/{productId}")
-	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<ProductResponse> handleRemoveCategoryInProduct(@PathVariable Long productId) throws ProductException {
-		return new ResponseEntity<>(productService.removeCategoryInProduct(productId), HttpStatus.OK);
-	}
+//	@PostMapping("/add_category/{categoryId}/to/{productId}")
+//	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+//	public ResponseEntity<ProductResponse> handleAddCategoryToProduct(@PathVariable Long categoryId, @PathVariable Long productId) throws CategoryException, ProductException {
+//		return new ResponseEntity<>(productService.addCategoryToProduct(categoryId, productId), HttpStatus.CREATED);
+//	}
+//
+//	@DeleteMapping("/remove_category/{productId}")
+//	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+//	public ResponseEntity<ProductResponse> handleRemoveCategoryInProduct(@PathVariable Long productId) throws ProductException {
+//		return new ResponseEntity<>(productService.removeCategoryInProduct(productId), HttpStatus.OK);
+//	}
 	
 }

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import ra.model.domain.Users;
 import ra.model.dto.response.CountOrderByUser;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,9 +22,13 @@ public interface IUserRepository extends JpaRepository<Users, Long> {
 	Optional<Users> findByEmail(String email);
 	
 	Page<Users> findAllByFullNameContaining(Pageable pageable, String fullName);
-
-
-//	@Query("select u.fullName,u.email,count(o.id) from Users as u join Orders as o where u.id = o.users.id and o.status = true group by u.id order by count(o.id) desc ")
-//	Optional<CountOrderByUser> getCountOrderByUser();
+	
+	@Modifying
+	@Query("SELECT new ra.model.dto.response.CountOrderByUser(u.fullName,COUNT(o.id)) " +
+			  "FROM Users u JOIN u.orders o " +
+			  "WHERE o.status = true " +
+			  "GROUP BY u.id " +
+			  "ORDER BY count(o.id) DESC")
+	List<CountOrderByUser> getCountOrderByUser();
 	
 }

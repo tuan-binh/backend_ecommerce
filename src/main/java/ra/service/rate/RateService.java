@@ -80,13 +80,15 @@ public class RateService implements IRateService {
 	}
 	
 	@Override
-	public RateResponse rateProductByUser(RateRequest rateRequest, Authentication authentication) throws ProductException, UserException, RateException {
+	public RateResponse rateProductByUser(RateRequest rateRequest, Long productId, Authentication authentication) throws ProductException, UserException, RateException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Product product = findProductById(productId);
 		Users users = findUserByUserName(userPrinciple.getEmail());
 		List<Orders> orders = orderRepository.findAllByUsersIdAndStatus(userPrinciple.getId(), true);
 		Rates rates = rateMapper.toEntity(rateRequest);
-		boolean check = checkBooleanProduct(orders, rates.getProduct().getId());
-		if (check) {
+		boolean check = checkBooleanProduct(orders, productId);
+		boolean checkRateUserInProduct = checkRateUserInProduct(product.getRates(), userPrinciple.getId());
+		if (check && checkRateUserInProduct) {
 			rates.setUsers(users);
 			return rateMapper.toResponse(rateRepository.save(rates));
 		}
@@ -111,6 +113,15 @@ public class RateService implements IRateService {
 			return rateMapper.toResponse(optionalRates.get());
 		}
 		throw new RateException("rate not found");
+	}
+	
+	public boolean checkRateUserInProduct(List<Rates> rates, Long userId) {
+		for (Rates r : rates) {
+			if (Objects.equals(r.getUsers().getId(), userId)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public boolean checkBooleanProduct(List<Orders> orders, Long productId) {

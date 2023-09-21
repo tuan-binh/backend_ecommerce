@@ -31,8 +31,11 @@ import ra.repository.IUserRepository;
 import ra.security.jwt.JwtEntryPoint;
 import ra.security.jwt.JwtProvider;
 import ra.security.user_principle.UserPrinciple;
+import ra.service.mail.MailService;
 import ra.service.role.IRoleService;
 
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -57,6 +60,8 @@ public class UserService implements IUserService {
 	private IOrderRepository orderRepository;
 	@Autowired
 	private JwtProvider jwtProvider;
+	@Autowired
+	private MailService mailService;
 	
 	@Override
 	public Page<UserResponse> findAll(Pageable pageable, Optional<String> fullName) {
@@ -125,13 +130,31 @@ public class UserService implements IUserService {
 	}
 	
 	@Override
-	public JwtResponse login(UserLogin userLogin) throws UserException {
+	public JwtResponse login(HttpSession session, UserLogin userLogin) throws UserException {
+		
 		Authentication authentication = null;
 		try {
 			authentication = authenticationManager.authenticate(
 					  new UsernamePasswordAuthenticationToken(userLogin.getEmail(), userLogin.getPassword())
 			);
 		} catch (AuthenticationException e) {
+			Integer count = (Integer) session.getAttribute("count");
+			if (count == null) {
+				// lần đầu tiền sai mat khau
+				session.setAttribute("count", 1);
+			} else {
+				// khong phai lan dau tien sai
+				if (count == 3) {
+					// khoa tai khoan
+					Users users = findUserByUserName(userLogin.getEmail());
+					users.setStatus(false);
+					userRepository.save(users);
+					throw new UserException("your account is blocked");
+				} else {
+					// thuc hien tang count
+					session.setAttribute("count", count + 1);
+				}
+			}
 			throw new UserException("Username or Password is incorrect");
 		}
 		
@@ -185,18 +208,16 @@ public class UserService implements IUserService {
 	
 	@Override
 	public List<CountOrderByUser> handleStatistical() throws OrderException, UserException {
+		List<CountOrderByUser> myList = userRepository.getCountOrderByUser();
+		System.out.println(myList);
 		List<CountOrderByUser> list = new ArrayList<>();
-		for (Long id : getAllIdUser()) {
-			Users users = findUserById(id);
-			if (users.getRoles().stream().noneMatch(item -> item.getRoleName().equals(ERole.ROLE_ADMIN))) {
-				list.add(CountOrderByUser.builder()
-						  .fullName(users.getFullName())
-						  .email(users.getEmail())
-						  .quantity(orderRepository.countOrdersByUsersIdAndStatus(id, true))
-						  .build());
+		for (int i = 0; i < 5; i++) {
+			try {
+				list.add(myList.get(i));
+			} catch (Exception e) {
+			
 			}
 		}
-		list.sort(Comparator.comparingInt(CountOrderByUser::getQuantity).reversed());
 		return list;
 	}
 	
@@ -224,6 +245,23 @@ public class UserService implements IUserService {
 		}
 		
 		return list;
+	}
+	
+	@Override
+	public void getNewPasswordWithEmail(String email) throws UserException, MessagingException {
+		Users users = findUserByUserName(email);
+		String newPassword = generateNewPassword();
+		mailService.sendHtmlToMail(email, "Mật khẩu mới", "Mật khẩu mới: " + newPassword);
+		users.setPassword(passwordEncoder.encode(newPassword));
+		userRepository.save(users);
+	}
+	
+	public String generateNewPassword() {
+		String password = "";
+		for (int i = 0; i < 6; i++) {
+			password += (Math.round(Math.random() * 10));
+		}
+		return password;
 	}
 	
 	public List<Long> getAllIdUser() {

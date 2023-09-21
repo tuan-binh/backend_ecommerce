@@ -28,6 +28,8 @@ public interface IProductService {
 	
 	ImageResponse changeImageAvatar(Long imageId, Long productId) throws ImageProductException, ProductException;
 	
+	List<ImageResponse> getImageByProductId(Long productId);
+	
 	List<ImageResponse> addImageToProduct(ImageRequest imageRequest) throws ProductException, ColorException, CouponException, CategoryException, ProductDetailException, OrderException, SizeException, ImageProductException;
 	
 	ImageResponse deleteImageInProduct(Long idImage) throws ImageProductException, ProductException;

@@ -13,6 +13,7 @@ import ra.model.dto.request.ProductDetailRequest;
 import ra.model.dto.response.ProductDetailResponse;
 import ra.service.productDetail.IProductDetailService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -30,13 +31,13 @@ public class ProductDetailController {
 	
 	@PostMapping("/add_product_detail")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<ProductDetailResponse> handleAddProductDetail(@RequestBody ProductDetailRequest productDetailRequest) throws ColorException, ProductException, SizeException, ProductDetailException {
+	public ResponseEntity<ProductDetailResponse> handleAddProductDetail(@RequestBody @Valid ProductDetailRequest productDetailRequest) throws ColorException, ProductException, SizeException, ProductDetailException {
 		return new ResponseEntity<>(productDetailService.addProductDetailToProduct(productDetailRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{productDetailId}")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<ProductDetailResponse> handleAddStockToProductDetail(@RequestBody ProductDetailRequest productDetailRequest, @PathVariable Long productDetailId) throws ColorException, ProductException, SizeException, ProductDetailException {
+	public ResponseEntity<ProductDetailResponse> handleAddStockToProductDetail(@RequestBody @Valid ProductDetailRequest productDetailRequest, @PathVariable Long productDetailId) throws ColorException, ProductException, SizeException, ProductDetailException {
 		return new ResponseEntity<>(productDetailService.addStockToProductDetail(productDetailRequest, productDetailId), HttpStatus.OK);
 	}
 	

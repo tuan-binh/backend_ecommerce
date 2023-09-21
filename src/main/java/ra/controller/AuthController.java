@@ -1,6 +1,7 @@
 package ra.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import ra.model.dto.request.UserRegister;
 import ra.model.dto.response.JwtResponse;
 import ra.service.user.IUserService;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 @RestController
@@ -22,8 +24,8 @@ public class AuthController {
 	private IUserService userService;
 	
 	@PostMapping("/login")
-	public ResponseEntity<JwtResponse> handleLogin(@RequestBody @Valid UserLogin userLogin) throws UserException {
-		return new ResponseEntity<>(userService.login(userLogin), HttpStatus.OK);
+	public ResponseEntity<JwtResponse> handleLogin(HttpSession session, @RequestBody @Valid UserLogin userLogin) throws UserException {
+		return new ResponseEntity<>(userService.login(session,userLogin), HttpStatus.OK);
 	}
 	
 	@PostMapping("/register")
@@ -31,7 +33,6 @@ public class AuthController {
 		userService.save(userRegister);
 		return new ResponseEntity<>("success", HttpStatus.OK);
 	}
-	
 	
 	
 }

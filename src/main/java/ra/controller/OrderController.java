@@ -13,6 +13,7 @@ import ra.model.dto.response.OrderResponse;
 import ra.service.orders.IOrderService;
 
 import javax.mail.MessagingException;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -31,6 +32,11 @@ public class OrderController {
 	@GetMapping("/get_order/{orderId}")
 	public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long orderId, Authentication authentication) throws OrderException {
 		return new ResponseEntity<>(orderService.getOrderById(orderId, authentication), HttpStatus.OK);
+	}
+	
+	@GetMapping("/get_list/{orderId}")
+	public ResponseEntity<List<CartItemResponse>> getCartInOrder(@PathVariable Long orderId, Authentication authentication) throws OrderException {
+		return new ResponseEntity<>(orderService.getCartInOrder(orderId, authentication), HttpStatus.OK);
 	}
 	
 	@GetMapping("/get_cart")
@@ -64,7 +70,7 @@ public class OrderController {
 	}
 	
 	@PostMapping("/check_out")
-	public ResponseEntity<OrderResponse> checkoutYourCart(@RequestBody CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException, MessagingException {
+	public ResponseEntity<OrderResponse> checkoutYourCart(@RequestBody @Valid CheckoutRequest checkoutRequest, Authentication authentication) throws UserException, OrderException, CouponException, MessagingException {
 		return new ResponseEntity<>(orderService.checkoutYourCart(checkoutRequest, authentication), HttpStatus.OK);
 	}
 	
@@ -73,7 +79,7 @@ public class OrderController {
 		return new ResponseEntity<>(orderService.cancelOrder(orderId, authentication), HttpStatus.OK);
 	}
 	
-	@PutMapping("/change_delivery/{orderId}")
+		@PutMapping("/change_delivery/{orderId}")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<OrderResponse> changeDeliveryOrder(@RequestParam("typeDelivery") String typeDelivery, @PathVariable Long orderId) throws OrderException, MessagingException {
 		return new ResponseEntity<>(orderService.changeDelivery(typeDelivery, orderId), HttpStatus.OK);

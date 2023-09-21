@@ -7,7 +7,6 @@ import ra.exception.ProductException;
 import ra.exception.RateException;
 import ra.exception.UserException;
 import ra.model.dto.request.RateRequest;
-import ra.model.dto.response.ProductResponse;
 import ra.model.dto.response.RateResponse;
 
 public interface IRateService {
@@ -23,9 +22,9 @@ public interface IRateService {
 	
 	RateResponse changeStatus(Long id) throws RateException;
 	
-	RateResponse rateProductByUser(RateRequest rateRequest, Authentication authentication) throws ProductException, UserException, RateException;
+	RateResponse rateProductByUser(RateRequest rateRequest, Long productId, Authentication authentication) throws ProductException, UserException, RateException;
 	
-	RateResponse updateRateInProduct(RateRequest rateRequest,Long rateId, Authentication authentication) throws RateException, ProductException, UserException;
+	RateResponse updateRateInProduct(RateRequest rateRequest, Long rateId, Authentication authentication) throws RateException, ProductException, UserException;
 	
 	RateResponse removeRateInProductByUser(Long rateId, Authentication authentication) throws RateException, UserException, ProductException;
 	

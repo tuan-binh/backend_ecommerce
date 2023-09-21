@@ -13,6 +13,8 @@ import ra.model.dto.request.CouponRequest;
 import ra.model.dto.response.CouponResponse;
 import ra.service.coupon.ICouponService;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/coupon")
 @CrossOrigin("*")
@@ -33,20 +35,20 @@ public class CouponController {
 	
 	@PostMapping("/add")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<CouponResponse> handleAddCoupon(@RequestBody CouponRequest couponRequest) throws CouponException {
+	public ResponseEntity<CouponResponse> handleAddCoupon(@RequestBody @Valid CouponRequest couponRequest) throws CouponException {
 		return new ResponseEntity<>(couponService.save(couponRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<CouponResponse> handleUpdateCoupon(@RequestBody CouponRequest couponRequest, @PathVariable Long id) {
+	public ResponseEntity<CouponResponse> handleUpdateCoupon(@RequestBody @Valid CouponRequest couponRequest, @PathVariable Long id) {
 		return new ResponseEntity<>(couponService.update(couponRequest, id), HttpStatus.OK);
 	}
 	
 	@GetMapping("/change_status/{id}")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<CouponResponse> handleChangeStatus(@PathVariable Long id) throws CouponException {
-		return new ResponseEntity<>(couponService.changeStatus(id),HttpStatus.OK);
+		return new ResponseEntity<>(couponService.changeStatus(id), HttpStatus.OK);
 	}
 	
 }

@@ -3,12 +3,15 @@ package ra.model.dto.response;
 import lombok.*;
 
 @NoArgsConstructor
-@AllArgsConstructor
 @Setter
 @Getter
 @Builder
 public class CountOrderByUser {
 	private String fullName;
-	private String email;
-	private Integer quantity;
+	private Long total;
+	
+	public CountOrderByUser(String fullName, Long total) {
+		this.fullName = fullName;
+		this.total = total;
+	}
 }

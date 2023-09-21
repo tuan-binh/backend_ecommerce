@@ -16,6 +16,8 @@ import ra.model.dto.response.JwtResponse;
 import ra.model.dto.response.RevenueByMonth;
 import ra.model.dto.response.UserResponse;
 
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +31,7 @@ public interface IUserService {
 	
 	UserResponse findById(Long id) throws UserException;
 	
-	JwtResponse login(UserLogin userLogin) throws UserException;
+	JwtResponse login(HttpSession session, UserLogin userLogin) throws UserException;
 	
 	UserResponse changeStatus(Long id) throws UserException;
 	
@@ -40,5 +42,7 @@ public interface IUserService {
 	List<CountOrderByUser> handleStatistical() throws OrderException, UserException;
 	
 	List<RevenueByMonth> getStatisticalRevenue(String year);
+	
+	void getNewPasswordWithEmail(String email) throws UserException, MessagingException;
 	
 }

@@ -61,6 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				  .antMatchers("/size/**").permitAll()
 				  .antMatchers("/coupon/**").permitAll()
 				  .antMatchers("/productDetail/**").permitAll()
+				  .antMatchers("/user/**").permitAll()
 				  .anyRequest().authenticated()
 				  .and()
 				  .exceptionHandling().authenticationEntryPoint(jwtEntryPoint).accessDeniedHandler(customAccessDeniedHandler)

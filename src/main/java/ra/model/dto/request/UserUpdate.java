@@ -16,8 +16,7 @@ public class UserUpdate {
 	@NotNull(message = "phone not null")
 	@NotBlank(message = "phone not blank")
 	@NotEmpty(message = "phone not empty")
-	@Min(value = 10, message = "must be than or equal 10")
-	@Max(value = 11, message = "must be lower or equal 11")
+	@Size(min = 10,max = 11 ,message = "must be than 10 or lower 11 number")
 	private String phone;
 	
 	@NotNull(message = "address not null")

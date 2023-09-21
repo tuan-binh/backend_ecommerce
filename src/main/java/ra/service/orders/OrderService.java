@@ -169,6 +169,16 @@ public class OrderService implements IOrderService {
 	}
 	
 	@Override
+	public List<CartItemResponse> getCartInOrder(Long orderId, Authentication authentication) throws OrderException {
+		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+		Optional<Orders> orders = orderRepository.findByIdAndUsersId(orderId, userPrinciple.getId());
+		if (orders.isPresent()) {
+			return orders.get().getList().stream().map(item -> cartItemMapper.toResponse(item)).collect(Collectors.toList());
+		}
+		throw new OrderException("not found this order");
+	}
+	
+	@Override
 	public List<CartItemResponse> getCarts(Authentication authentication) throws OrderException, MessagingException {
 		UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
 		Optional<Orders> orders = orderRepository.findByUsersIdAndStatus(userPrinciple.getId(), false);
@@ -319,6 +329,11 @@ public class OrderService implements IOrderService {
 			if (coupon != null) {
 				boolean check = checkDateInCoupon(coupon);
 				if (check) {
+					if (coupon.getStock() == 0) {
+						coupon.setStatus(false);
+						couponRepository.save(coupon);
+						throw new CouponException("i don't have this coupon");
+					}
 					orders.get().setCoupon(coupon);
 					orders.get().setTotal(orders.get().getTotal() - (orders.get().getTotal() * coupon.getPercent()));
 					coupon.setStock(coupon.getStock() - 1);

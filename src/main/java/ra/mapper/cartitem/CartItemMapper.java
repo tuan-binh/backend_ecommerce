@@ -38,7 +38,11 @@ public class CartItemMapper implements IGenericMapper<CartItem, CartItemRequest,
 	public CartItemResponse toResponse(CartItem cartItem) {
 		return CartItemResponse.builder()
 				  .id(cartItem.getId())
-				  .price(cartItem.getPrice())
+				  .productName(cartItem.getProductDetail().getProduct().getProductName())
+				  .url(cartItem.getProductDetail().getProduct().getImageActive())
+				  .price(cartItem.getProductDetail().getProduct().getPrice())
+				  .color(cartItem.getProductDetail().getColor().getColorName())
+				  .size(cartItem.getProductDetail().getSize().getSizeName())
 				  .quantity(cartItem.getQuantity())
 				  .build();
 	}

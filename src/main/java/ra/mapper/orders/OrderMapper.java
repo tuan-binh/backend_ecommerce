@@ -4,21 +4,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ra.exception.CouponException;
 import ra.mapper.IGenericMapper;
+import ra.mapper.cartitem.CartItemMapper;
 import ra.model.domain.Coupon;
 import ra.model.domain.EDelivered;
 import ra.model.domain.Orders;
 import ra.model.dto.request.OrderRequest;
 import ra.model.dto.response.OrderResponse;
 import ra.repository.ICouponRepository;
-import ra.service.coupon.CouponService;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderResponse> {
 	
 	@Autowired
 	private ICouponRepository couponRepository;
+	@Autowired
+	private CartItemMapper cartItemMapper;
 	
 	@Override
 	public Orders toEntity(OrderRequest orderRequest) throws CouponException {
@@ -43,6 +46,7 @@ public class OrderMapper implements IGenericMapper<Orders, OrderRequest, OrderRe
 				  .phone(orders.getPhone())
 				  .total(orders.getTotal())
 				  .coupon(orders.getCoupon())
+				  .carts(orders.getList().stream().map(item -> cartItemMapper.toResponse(item)).collect(Collectors.toList()))
 				  .status(orders.isStatus())
 				  .build();
 	}

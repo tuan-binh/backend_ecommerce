@@ -24,6 +24,7 @@ import ra.service.upload_aws.StorageService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -113,9 +114,18 @@ public class ProductService implements IProductService {
 	@Override
 	public ImageResponse changeImageAvatar(Long imageId, Long productId) throws ImageProductException, ProductException {
 		ImageProduct imageProduct = findImageById(imageId);
+		if (!Objects.equals(imageProduct.getProduct().getId(), productId)) {
+			throw new ImageProductException("This photo does not belong to this product");
+		}
 		Product product = findProductById(productId);
 		imageProduct.setProduct(product);
 		return imageMapper.toResponse(iImageProductRepository.save(imageProduct));
+	}
+	
+	@Override
+	public List<ImageResponse> getImageByProductId(Long productId) {
+		List<ImageProduct> list = iImageProductRepository.findAllByProductId(productId);
+		return list.stream().map(item -> imageMapper.toResponse(item)).collect(Collectors.toList());
 	}
 	
 	public ImageProduct findImageById(Long imageId) throws ImageProductException {

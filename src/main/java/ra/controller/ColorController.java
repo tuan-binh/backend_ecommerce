@@ -13,6 +13,7 @@ import ra.model.dto.request.ColorRequest;
 import ra.model.dto.response.ColorResponse;
 import ra.service.color.IColorService;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
@@ -35,13 +36,13 @@ public class ColorController {
 	
 	@PostMapping("/add")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<ColorResponse> handleAddColor(@RequestBody ColorRequest colorRequest) throws ColorException {
+	public ResponseEntity<ColorResponse> handleAddColor(@RequestBody @Valid ColorRequest colorRequest) throws ColorException {
 		return new ResponseEntity<>(colorService.save(colorRequest), HttpStatus.CREATED);
 	}
 	
 	@PutMapping("/update/{id}")
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-	public ResponseEntity<ColorResponse> handleUpdateColor(@RequestBody ColorRequest colorRequest, @PathVariable Long id) {
+	public ResponseEntity<ColorResponse> handleUpdateColor(@RequestBody @Valid ColorRequest colorRequest, @PathVariable Long id) {
 		return new ResponseEntity<>(colorService.update(colorRequest, id), HttpStatus.OK);
 	}
 	

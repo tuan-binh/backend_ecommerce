@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ra.model.domain.Orders;
-import ra.model.domain.ProductDetail;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,6 +11,10 @@ import ra.model.domain.ProductDetail;
 @Builder
 public class CartItemResponse {
 	private Long id;
+	private String productName;
+	private String url;
 	private double price;
+	private String color;
+	private String size;
 	private int quantity;
 }
